@@ -69,7 +69,7 @@ void Display_Render(void) {
 						display.pixels[(py * RES_X) + px] = 0x00000000;
 					}
 					else {
-						display.pixels[(py * RES_X) + px] = 0xFF888888;
+						display.pixels[(py * RES_X) + px] = 0xFFcccccc;
 					}
 				}
 			}
