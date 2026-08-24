@@ -34,6 +34,7 @@ void Display_Init(void) {
 	}
 
 	display.pixels = SafeMalloc(RES_X * RES_Y * 4);
+	display.scroll = 0;
 }
 
 void Display_Free(void) {
@@ -45,7 +46,8 @@ void Display_Free(void) {
 void Display_Render(void) {
 	for (int y = 0; y < CHR_H; ++ y) {
 		for (int x = 0; x < CHR_W; ++ x) {
-			uint8_t ch = Emu_Read8((uint16_t) (0x5000 + x + (y * CHR_W)));
+			uint16_t start = 0x5000 + (display.scroll * CHR_W);
+			uint8_t ch     = Emu_Read8((uint16_t) (0x5000 + x + (y * CHR_W)));
 
 			ch = 'A' + x;
 

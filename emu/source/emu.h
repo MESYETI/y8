@@ -21,6 +21,12 @@ typedef struct {
 	uint8_t  h;
 	uint16_t sp;
 	uint16_t pc;
+
+	// state
+	bool zero;
+	bool sign;
+	bool carry;
+	bool halted;
 } Emu;
 
 extern Emu emu;
