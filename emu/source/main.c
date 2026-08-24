@@ -1,7 +1,7 @@
 #include "app.h"
 
-int main(void) {
-	App_Init();
+int main(int argc, char** argv) {
+	App_Init(argc, argv);
 
 	while (app.running) {
 		App_Update();

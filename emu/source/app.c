@@ -5,7 +5,7 @@
 
 App app;
 
-void App_Init(void) {
+void App_Init(int argc, char** argv) {
 	app.running = true;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -15,6 +15,19 @@ void App_Init(void) {
 
 	Emu_Init();
 	Display_Init();
+
+	FILE* rom = fopen("rom.bin", "rb");
+
+	if (rom) {
+		size_t res = fread(emu.rom, 1, sizeof(emu.rom), rom);
+
+		printf("rom: loaded %d bytes\n", (int) res);
+
+		fclose(rom);
+	}
+	else {
+		fprintf(stderr, "warning: no rom loaded\n");
+	}
 }
 
 void App_Update(void) {
@@ -27,6 +40,8 @@ void App_Update(void) {
 			}
 		}
 	}
+
+	Emu_RunInsts(1000);
 
 	Display_Render();
 

@@ -49,8 +49,6 @@ void Display_Render(void) {
 			uint16_t start = 0x5000 + (display.scroll * CHR_W);
 			uint8_t ch     = Emu_Read8((uint16_t) (0x5000 + x + (y * CHR_W)));
 
-			ch = 'A' + x;
-
 			bool invert = ch & 0x80? 1 : 0;
 			ch = ch & 0x7F;
 

@@ -9,7 +9,7 @@ typedef struct {
 
 extern App app;
 
-void App_Init(void);
+void App_Init(int argc, char** argv);
 void App_Update(void);
 void App_Free(void);
 

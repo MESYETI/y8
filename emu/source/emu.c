@@ -47,6 +47,8 @@ uint16_t Emu_Read16(uint16_t addr) {
 
 void Emu_Write8(uint16_t addr, uint8_t value) {
 	*Emu_GetByte(addr) = value;
+
+	printf("Writing %d to %d\n", (int) value, (int) addr);
 }
 
 void Emu_Write16(uint16_t addr, uint16_t value) {
@@ -92,6 +94,8 @@ void Emu_WriteReg16(uint8_t reg, uint16_t value) {
 			return;
 		}
 	}
+
+	printf("setting register %d to %d\n", (int) reg, (int) value);
 
 	Emu_WriteReg8(h, ((uint8_t) ((value & 0xFF00) >> 8)));
 	Emu_WriteReg8(l, ((uint8_t) (value & 0xFF)));
@@ -159,6 +163,8 @@ static uint16_t NextWord(void) {
 
 	ret |= ((uint16_t) NextByte()) << 8;
 
+	printf("read word: %d\n", (int) ret);
+
 	return ret;
 }
 
@@ -174,6 +180,10 @@ static uint16_t NextWord(void) {
 	uint8_t rd = (B & 0xE0) >> 5; \
 	uint8_t ps = (B & 0x18) >> 3
 
+#define DEC_PD_RS(B) \
+	uint8_t pd = (B & 0xC0) >> 6; \
+	uint8_t rs = (B & 0x38) >> 3
+
 #define DEC_RD(B) \
 	uint8_t rd = (B & 0xE0) >> 5
 
@@ -181,13 +191,18 @@ static uint16_t NextWord(void) {
 	uint8_t pd = (B & 0xC0) >> 6
 
 void Emu_RunInsts(int times) {
-	if (emu.halted) return;
-
 	for (int i = 0; i < times; ++ i) {
+		if (emu.halted) return;
+
 		uint8_t opc = NextByte();
 
 		switch (opc) {
-			case 0x00: emu.halted = true; break; // HALT
+			case 0x00: { // HALT
+				printf("computer halted\n");
+
+				emu.halted = true;
+				break;
+			}
 			case 0x10: { // MOV Rd, Rs
 				uint8_t param = NextByte();
 				DEC_RD_RS(param);
@@ -238,6 +253,32 @@ void Emu_RunInsts(int times) {
 				DEC_PD(NextByte());
 
 				Emu_WriteReg16(pd, Emu_Read16(NextWord()));
+				break;
+			}
+			case 0x19: { // MOV [Pd], Rs
+				uint8_t param = NextByte();
+				DEC_PD_RS(param);
+
+				Emu_Write8(Emu_ReadReg16(pd), Emu_ReadReg8(rs));
+				break;
+			}
+			case 0x1A: { // MOV [Pd], Ps
+				uint8_t param = NextByte();
+				DEC_PD_PS(param);
+
+				Emu_Write16(Emu_ReadReg16(pd), Emu_ReadReg16(ps));
+				break;
+			}
+			case 0x1b: { // MOV [Pd], N8
+				DEC_PD(NextByte());
+
+				Emu_Write8(Emu_ReadReg16(pd), NextByte());
+				break;
+			}
+			case 0x1C: { // MOV [Pd, N16]
+				DEC_PD(NextByte());
+
+				Emu_Write16(Emu_ReadReg16(pd), NextWord());
 				break;
 			}
 			default: {
