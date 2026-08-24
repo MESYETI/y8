@@ -35,6 +35,10 @@ void Display_Init(void) {
 
 	display.pixels = SafeMalloc(RES_X * RES_Y * 4);
 	display.scroll = 0;
+
+	for (int i = 0; i < RES_X * RES_Y; ++ i) {
+		display.pixels[i] = 0xFFCCCCCC;
+	}
 }
 
 void Display_Free(void) {
@@ -56,8 +60,8 @@ void Display_Render(void) {
 
 			for (int cy = 0; cy < 8; ++ cy) {
 				for (int cx = 0; cx < 8; ++ cx) {
-					int px = (x * 8) + cx;
-					int py = (y * 8) + cy;
+					int px = (x * 8) + cx + 4;
+					int py = (y * 8) + cy + 4;
 
 					uint8_t fontLine = Emu_Read8(chAddr + ((uint16_t) cy));
 

@@ -3,10 +3,10 @@
 
 #include <SDL2/SDL.h>
 
-#define RES_X 256
-#define RES_Y 192
 #define CHR_W 32
 #define CHR_H 24
+#define RES_X ((CHR_W * 8) + 8)
+#define RES_Y ((CHR_H * 8) + 8)
 
 typedef struct {
 	SDL_Window*   window;

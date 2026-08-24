@@ -2,5 +2,5 @@
 #include "../rules.asm"
 
 mov ab, 0x5000
-mov [ab], 65
+mov.b [ab], "A"
 halt

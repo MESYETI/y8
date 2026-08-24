@@ -22,17 +22,17 @@
 
 #ruledef
 {
-	halt                          => 0x00
-	mov {rd: r8}, {rs: r8}        => 0x10 @ rd @ rs @ 0b00
-	mov {pd: r16}, {ps: r16}      => 0x11 @ pd @ ps @ 0b0000
-	mov {rd: r8}, {value: u8}     => 0x12 @ rd @ 0b00000 @ value
-	mov {pd: r16}, {value: u16}   => 0x13 @ pd @ 0b000000 @ $le(value)
-	mov {rd: r8}, [{ps: r16}]     => 0x14 @ rd @ ps @ 0b000
-	mov {pd: r16}, [{ps: r16}]    => 0x15 @ pd @ ps @ 0b0000
-	mov {rd: r8}, [{value: u16}]  => 0x17 @ rd @ 0b00000 @ $le(value)
-	mov {pd: r16}, [{value: u16}] => 0x18 @ pd @ 0b000000 @ $le(value)
-	mov [{pd: r16}], {rs: r8}     => 0x19 @ pd @ rs @ 0b000
-	mov [{pd: r16}], {ps: r16}    => 0x1A @ pd @ ps @ 0b000
-	mov [{pd: r16}], {value: u8}  => 0x1B @ pd @ 0b000000 @ value
-	mov [{pd: r16}], {value: u16} => 0x1C @ pd @ 0b000000 @ $le(value)
+	halt                            => 0x00
+	mov {rd: r8}, {rs: r8}          => 0x10 @ rd @ rs @ 0b00
+	mov {pd: r16}, {ps: r16}        => 0x11 @ pd @ ps @ 0b0000
+	mov {rd: r8}, {value: u8}       => 0x12 @ rd @ 0b00000 @ value
+	mov {pd: r16}, {value: u16}     => 0x13 @ pd @ 0b000000 @ $le(value)
+	mov {rd: r8}, [{ps: r16}]       => 0x14 @ rd @ ps @ 0b000
+	mov {pd: r16}, [{ps: r16}]      => 0x15 @ pd @ ps @ 0b0000
+	mov {rd: r8}, [{value: u16}]    => 0x17 @ rd @ 0b00000 @ $le(value)
+	mov {pd: r16}, [{value: u16}]   => 0x18 @ pd @ 0b000000 @ $le(value)
+	mov [{pd: r16}], {rs: r8}       => 0x19 @ pd @ rs @ 0b000
+	mov [{pd: r16}], {ps: r16}      => 0x1A @ pd @ ps @ 0b000
+	mov.b [{pd: r16}], {value: u8}  => 0x1B @ pd @ 0b000000 @ value
+	mov.w [{pd: r16}], {value: u16} => 0x1C @ pd @ 0b000000 @ $le(value)
 }
