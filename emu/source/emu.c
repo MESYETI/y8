@@ -47,8 +47,6 @@ uint16_t Emu_Read16(uint16_t addr) {
 
 void Emu_Write8(uint16_t addr, uint8_t value) {
 	*Emu_GetByte(addr) = value;
-
-	printf("Writing %d to %d\n", (int) value, (int) addr);
 }
 
 void Emu_Write16(uint16_t addr, uint16_t value) {
@@ -94,8 +92,6 @@ void Emu_WriteReg16(uint8_t reg, uint16_t value) {
 			return;
 		}
 	}
-
-	printf("setting register %d to %d\n", (int) reg, (int) value);
 
 	Emu_WriteReg8(h, ((uint8_t) ((value & 0xFF00) >> 8)));
 	Emu_WriteReg8(l, ((uint8_t) (value & 0xFF)));
@@ -163,7 +159,18 @@ static uint16_t NextWord(void) {
 
 	ret |= ((uint16_t) NextByte()) << 8;
 
-	printf("read word: %d\n", (int) ret);
+	return ret;
+}
+
+static void Push16(uint16_t value) {
+	emu.sp -= 2;
+
+	Emu_Write16(emu.sp, value);
+}
+
+static uint16_t Pop16(void) {
+	uint16_t ret = Emu_Read16(emu.sp);
+	emu.sp += 2;
 
 	return ret;
 }
@@ -279,6 +286,73 @@ void Emu_RunInsts(int times) {
 				DEC_PD(NextByte());
 
 				Emu_Write16(Emu_ReadReg16(pd), NextWord());
+				break;
+			}
+			case 0x20: { // JMP N16	
+				emu.pc = NextWord();
+				break;
+			}
+			case 0x21: { // JMP [N16]
+				emu.pc = Emu_Read16(NextWord());
+				break;
+			}
+			case 0x22: { // JMP Pd
+				DEC_PD(NextByte());
+
+				emu.pc = Emu_ReadReg16(pd);
+				break;
+			}
+			case 0x23: { // JMP [Pd]
+				DEC_PD(NextByte());
+
+				emu.pc = Emu_Read16(Emu_ReadReg16(pd));
+				break;
+			}
+			case 0x24: { // CALL N16
+				Push16(emu.pc);
+
+				emu.pc = NextWord();
+				break;
+			}
+			case 0x25: { // CALL [N16]
+				Push16(emu.pc);
+
+				emu.pc = Emu_Read16(NextWord());
+				break;
+			}
+			case 0x26: { // CALL Pd
+				DEC_PD(NextByte());
+
+				Push16(emu.pc);
+				emu.pc = Emu_ReadReg16(pd);
+				break;
+			}
+			case 0x27: { // CALL [Pd]
+				DEC_PD(NextByte());
+
+				Push16(emu.pc);
+				emu.pc = Emu_Read16(Emu_ReadReg16(pd));
+				break;
+			}
+			case 0x28:   // JZ  N16
+			case 0x29:   // JNZ N16
+			case 0x2A:   // JS  N16
+			case 0x2B:   // JNS N16
+			case 0x2C:   // JC  N16
+			case 0x2D: { // JNC N16
+				if (
+					((opc == 0x28) && !emu.zero)  || ((opc == 0x29) && emu.zero) ||
+					((opc == 0x2A) && !emu.sign)  || ((opc == 0x2B) && emu.sign) ||
+					((opc == 0x2C) && !emu.carry) || ((opc == 0x2D) && emu.carry)
+				) {
+					break;
+				}
+
+				emu.pc = NextWord();
+				break;
+			}
+			case 0x2E: { // RET
+				emu.pc = Pop16();
 				break;
 			}
 			default: {
