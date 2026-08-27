@@ -197,6 +197,16 @@ static uint16_t Pop16(void) {
 #define DEC_PD(B) \
 	uint8_t pd = (B & 0xC0) >> 6
 
+#define FLAGS_8(V) do { \
+	emu.zero = v == 0; \
+	emu.sign = v & 0x80; \
+} while (0)
+
+#define FLAGS_16(V) do { \
+	emu.zero = v == 0; \
+	emu.sign = v & 0x8000; \
+} while (0)
+
 void Emu_RunInsts(int times) {
 	for (int i = 0; i < times; ++ i) {
 		if (emu.halted) return;
@@ -214,78 +224,114 @@ void Emu_RunInsts(int times) {
 				uint8_t param = NextByte();
 				DEC_RD_RS(param);
 
-				Emu_WriteReg8(rd, Emu_ReadReg8(rs));
+				uint8_t v = Emu_ReadReg8(rs);
+				FLAGS_8(v);
+
+				Emu_WriteReg8(rd, v);
 				break;
 			}
 			case 0x11: { // MOV Pd, Ps
 				uint8_t param = NextByte();
 				DEC_PD_PS(param);
 
-				Emu_WriteReg16(pd, Emu_ReadReg16(ps));
+				uint16_t v = Emu_ReadReg16(ps);
+				FLAGS_16(v);
+
+				Emu_WriteReg16(pd, v);
 				break;
 			}
 			case 0x12: { // MOV Rd, N8
 				DEC_RD(NextByte());
 
-				Emu_WriteReg8(rd, NextByte());
+				uint8_t v = NextByte();
+				FLAGS_8(v);
+
+				Emu_WriteReg8(rd, v);
 				break;
 			}
 			case 0x13: { // MOV Pd, N16
 				DEC_PD(NextByte());
 
-				Emu_WriteReg16(pd, NextWord());
+				uint16_t v = NextWord();
+				FLAGS_16(v);
+
+				Emu_WriteReg16(pd, v);
 				break;
 			}
 			case 0x14: { // MOV Rd, [Ps]
 				uint8_t param = NextByte();
 				DEC_RD_PS(param);
 
-				Emu_WriteReg8(rd, Emu_Read16(Emu_ReadReg16(ps)));
+				uint8_t v = Emu_Read16(Emu_ReadReg16(ps));
+				FLAGS_16(v);
+
+				Emu_WriteReg8(rd, v);
 				break;
 			}
 			case 0x15: { // MOV Pd, [Ps]
 				uint8_t param = NextByte();
 				DEC_PD_PS(param);
 
-				Emu_WriteReg16(pd, Emu_Read16(Emu_ReadReg16(ps)));
+				uint16_t v = Emu_Read16(Emu_ReadReg16(ps));
+				FLAGS_16(v);
+
+				Emu_WriteReg16(pd, v);
 				break;
 			}
 			case 0x17: { // MOV Rd, [N16]
 				DEC_RD(NextByte());
 
-				Emu_WriteReg8(rd, Emu_Read8(NextWord()));
+				uint8_t v = Emu_Read8(NextWord());
+				FLAGS_8(v);
+
+				Emu_WriteReg8(rd, v);
 				break;
 			}
 			case 0x18: { // MOV Pd, [N16]
 				DEC_PD(NextByte());
 
-				Emu_WriteReg16(pd, Emu_Read16(NextWord()));
+				uint16_t v = Emu_Read16(NextWord());
+				FLAGS_16(v);
+
+				Emu_WriteReg16(pd, v);
 				break;
 			}
 			case 0x19: { // MOV [Pd], Rs
 				uint8_t param = NextByte();
 				DEC_PD_RS(param);
 
-				Emu_Write8(Emu_ReadReg16(pd), Emu_ReadReg8(rs));
+				uint8_t v = Emu_ReadReg8(rs);
+				FLAGS_8(v);
+
+				Emu_Write8(Emu_ReadReg16(pd), v);
 				break;
 			}
 			case 0x1A: { // MOV [Pd], Ps
 				uint8_t param = NextByte();
 				DEC_PD_PS(param);
 
-				Emu_Write16(Emu_ReadReg16(pd), Emu_ReadReg16(ps));
+				uint16_t v = Emu_ReadReg16(ps);
+				FLAGS_16(v);
+
+				Emu_Write16(Emu_ReadReg16(pd), v);
 				break;
 			}
 			case 0x1b: { // MOV [Pd], N8
 				DEC_PD(NextByte());
 
-				Emu_Write8(Emu_ReadReg16(pd), NextByte());
+				uint8_t v = NextByte();
+				FLAGS_8(v);
+
+				Emu_Write8(Emu_ReadReg16(pd), v);
 				break;
 			}
-			case 0x1C: { // MOV [Pd, N16]
+			case 0x1C: { // MOV [Pd], N16
 				DEC_PD(NextByte());
 
-				Emu_Write16(Emu_ReadReg16(pd), NextWord());
+				uint16_t v = NextWord();
+				FLAGS_16(v);
+
+				Emu_Write16(Emu_ReadReg16(pd), v);
 				break;
 			}
 			case 0x20: { // JMP N16	
