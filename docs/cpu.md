@@ -89,12 +89,19 @@ Flags:
 | `4A`         | `01001010`   | `Rd Rs 00`               | OR   | `Rd <- Rd | Rs`                | ZS    |
 | `4B`         | `01001011`   | `Rd Rs 00`               | XOR  | `Rd <- Rd ^ Rs`                | ZS    |
 | `4C`         | `01001100`   | `Rd`                     | NOT  | `Rd <- ~Rd`                    | ZS    |
+| `4D`         | `01001101`   | `Rd Rs 00`               | ICMP | `icmp(Rd, Rs)`                 | ZSC   |
+| `4E`         | `01001110`   | `Rd 00000 N8`            | ICMP | `icmp(Rd, N8)`                 | ZSC   |
+| `4F`         | `01001111`   | `Pd Ps 0000`             | ICMP | `icmp(Pd, Ps)`                 | ZSC   |
 | `50`         | `01010000`   |                          | SETZ | `Z = 1`                        | Z     |
 | `51`         | `01010001`   |                          | CLZ  | `Z = 0`                        | Z     |
 | `52`         | `01010010`   |                          | SETS | `S = 1`                        | S     |
 | `53`         | `01010011`   |                          | CLS  | `S = 0`                        | S     |
 | `54`         | `01010100`   |                          | SETC | `C = 1`                        | C     |
 | `55`         | `01010101`   |                          | CLC  | `C = 0`                        | C     |
+| `60`         | `01100000`   | `Rd 00000`               | INC  | `Rd = Rd + 1`                  | ZC    |
+| `61`         | `01100001`   | `Pd 000000`              | INC  | `Pd = Pd + 1`                  | ZC    |
+| `62`         | `01100010`   | `Rd 00000`               | DEC  | `Rd = Rd - 1`                  | ZC    |
+| `63`         | `01100011`   | `Pd 000000`              | DEC  | `Pd = Pd - 1`                  | ZC    |
 
 ### Compare instruction
 Sets `Z` for equality, `S` for lesser than, and `C` for greater than.

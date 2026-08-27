@@ -401,6 +401,174 @@ void Emu_RunInsts(int times) {
 				emu.pc = Pop16();
 				break;
 			}
+			case 0x40:   // CMP Rd, Rs
+			case 0x41:   // CMP Rd, N8
+			case 0x42: { // CMP Pd, Ps
+				uint16_t a;
+				uint16_t b;
+
+				uint8_t param = NextByte();
+
+				switch (opc) {
+					case 0x40: { // CMP Rd, Rs
+						DEC_RD_RS(param);
+
+						a = Emu_ReadReg8(rd);
+						b = Emu_ReadReg8(rs);
+						break;
+					}
+					case 0x41: { // CMP Rd, N8
+						DEC_RD(param);
+
+						a = Emu_ReadReg8(rd);
+						b = NextByte();
+						break;
+					}
+					case 0x42: { // CMP Pd, Ps
+						DEC_PD_PS(param);
+
+						a = Emu_ReadReg16(pd);
+						b = Emu_ReadReg16(ps);
+						break;
+					}
+				}
+
+				emu.zero  = a == b;
+				emu.sign  = a < b;
+				emu.carry = a > b;
+				break;
+			}
+			case 0x43:   // ADD Rd, Rs
+			case 0x44:   // SUB Rd, Rs
+			case 0x45:   // MUL Rd, Rs
+			case 0x46:   // DIV Rd, Rs
+			case 0x49:   // AND Rd, Rs
+			case 0x4A:   // OR  Rd, Rs
+			case 0x4B: { // XOR Rd, Rs
+				uint8_t param = NextByte();
+				DEC_RD_RS(param);
+
+				uint8_t a = Emu_ReadReg8(rd);
+				uint8_t b = Emu_ReadReg8(rs);
+
+				switch (opc) {
+					case 0x43: a += b; break;
+					case 0x44: a -= b; break;
+					case 0x45: a *= b; break;
+					case 0x46: a /= b; break;
+					case 0x49: a &= b; break;
+					case 0x4A: a |= b; break;
+					case 0x4B: a ^= b; break;
+				}
+
+				Emu_WriteReg8(rd, a);
+				break;
+			}
+			case 0x47:   // ADD Pd, Rs
+			case 0x48: { // SUB Pd, Rs
+				uint8_t param = NextByte();
+				DEC_PD_RS(param);
+
+				uint16_t a = Emu_ReadReg16(pd);
+				uint8_t  b = Emu_ReadReg8(rs);
+
+				if (opc == 0x47) {
+					a += b;
+				}
+				else {
+					a -= b;
+				}
+
+				Emu_WriteReg16(pd, a);
+				break;
+			}
+			case 0x4D:   // ICMP Rd, Rs
+			case 0x4E: { // ICMP Rd, N8
+				uint8_t param = NextByte();
+
+				int8_t a;
+				int8_t b;
+
+				if (opc == 0x4E) {
+					DEC_RD(param);
+
+					a = (int8_t) Emu_ReadReg8(rd);
+					b = (int8_t) NextByte();
+				}
+				else {
+					DEC_RD_RS(param);
+
+					a = (int8_t) Emu_ReadReg8(rd);
+					b = (int8_t) Emu_ReadReg8(rs);
+				}
+
+				emu.zero  = a == b;
+				emu.sign  = a < b;
+				emu.carry = a > b;
+				break;
+			}
+			case 0x4F: { // ICMP Pd, Ps
+				uint8_t param = NextByte();
+				DEC_PD_PS(param);
+
+				uint16_t a = Emu_ReadReg16(pd);
+				uint16_t b = Emu_ReadReg16(ps);
+
+				emu.zero  = a == b;
+				emu.sign  = a < b;
+				emu.carry = a > b;
+				break;
+			}
+			case 0x50: emu.zero = true;   break; // SETZ
+			case 0x51: emu.zero = false;  break; // CLZ
+			case 0x52: emu.sign = true;   break; // SETS
+			case 0x53: emu.sign = false;  break; // CLS
+			case 0x54: emu.carry = true;  break; // SETC
+			case 0x55: emu.carry = false; break; // CLC
+			case 0x60: { // INC Rd
+				DEC_RD(NextByte());
+
+				uint8_t v = Emu_ReadReg8(rd);
+
+				emu.zero  = v == 255;
+				emu.carry = v == 255;
+
+				Emu_WriteReg8(rd, v + 1);
+				break;
+			}
+			case 0x61: { // INC Pd
+				DEC_PD(NextByte());
+
+				uint16_t v = Emu_ReadReg16(pd);
+
+				emu.zero  = v == 65535;
+				emu.carry = v == 65535;
+
+				Emu_WriteReg16(pd, v + 1);
+				break;
+			}
+			case 0x62: { // DEC Rd
+				DEC_RD(NextByte());
+
+				uint8_t v = Emu_ReadReg8(rd);
+
+				emu.zero  = v == 1;
+				emu.carry = v == 0;
+
+				Emu_WriteReg8(rd, v - 1);
+				break;
+			}
+			case 0x63: { // DEC Pd
+				DEC_PD(NextByte());
+
+				uint16_t v = Emu_ReadReg16(pd);
+
+				emu.zero  = v == 1;
+				emu.carry = v == 0;
+
+				Emu_WriteReg16(pd, v - 1);
+				break;
+			}
 			default: {
 				fprintf(stderr, "Invalid opcode %.2X", opc);
 				emu.halted = true;
