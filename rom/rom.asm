@@ -1,22 +1,20 @@
 #addr 0
 
-mov ab, (0xC000 + 0)
-mov.b [ab], "Y"
-mov ab, (0xC000 + 1)
-mov.b [ab], "E"
-mov ab, (0xC000 + 2)
-mov.b [ab], "T"
-mov ab, (0xC000 + 3)
-mov.b [ab], "I"
-mov ab, (0xC000 + 4)
-mov.b [ab], "-"
-mov ab, (0xC000 + 5)
-mov.b [ab], "8"
-mov ab, (0xC000 + 6)
-mov.b [ab], " "
-mov ab, (0xC000 + 7)
-mov.b [ab], "R"
-mov ab, (0xC000 + 8)
-mov.b [ab], "O"
-mov ab, (0xC000 + 9)
-mov.b [ab], "M"
+_start:
+	mov sp, 0xC000
+
+	mov ab, 0xC000
+	mov c,  64
+	mov ef, header
+
+.loop:
+	mov g, [ef]
+	mov [ab], g
+	inc ef
+	inc ab
+	dec c
+	jnz .loop
+	halt
+
+header: #d " * * * *  YETI-8 ROM * * * * *  "
+        #d "         MONITOR V0.1           "

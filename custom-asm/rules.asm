@@ -37,22 +37,22 @@
 	mov.b [{pd: r16}], {value: u8}  => 0x1B @ pd @ 0b000000 @ value
 	mov.w [{pd: r16}], {value: u16} => 0x1C @ pd @ 0b000000 @ $le(value)
 
-	jmp {value: u16}   => 0x20 @ value
-	jmp [{value: u16}] => 0x21 @ value
+	jmp {value: u16}   => 0x20 @ $le(value)
+	jmp [{value: u16}] => 0x21 @ $le(value)
 	jmp {pd: r16}      => 0x22 @ pd @ 0b000000
 	jmp [{pd: r16}]    => 0x23 @ pd @ 0b000000
 
-	call {value: u16}   => 0x24 @ value
-	call [{value: u16}] => 0x25 @ value
+	call {value: u16}   => 0x24 @ $le(value)
+	call [{value: u16}] => 0x25 @ $le(value)
 	call {pd: r16}      => 0x26 @ pd @ 0b000000
 	call [{pd: r16}]    => 0x27 @ pd @ 0b000000
 
-	jz {value: u16}  => 0x28 @ value
-	jnz {value: u16} => 0x29 @ value
-	js {value: u16}  => 0x2A @ value
-	jns {value: u16} => 0x2B @ value
-	jc {value: u16}  => 0x2C @ value
-	jnc {value: u16} => 0x2D @ value
+	jz {value: u16}  => 0x28 @ $le(value)
+	jnz {value: u16} => 0x29 @ $le(value)
+	js {value: u16}  => 0x2A @ $le(value)
+	jns {value: u16} => 0x2B @ $le(value)
+	jc {value: u16}  => 0x2C @ $le(value)
+	jnc {value: u16} => 0x2D @ $le(value)
 
 	ret => 0x2E
 
@@ -90,3 +90,9 @@
 	dec {rd: r8}  => 0x62 @ rd @ 0b00000
 	dec {pd: r16} => 0x63 @ pd @ 0b000000
 }
+
+ROM       = 0x0000
+CART      = 0x4000
+RAM       = 0x8000
+VRAM      = 0xC000
+VRAM_FONT = 0xCC00

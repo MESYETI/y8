@@ -52,6 +52,7 @@ uint16_t Emu_Read16(uint16_t addr) {
 
 void Emu_Write8(uint16_t addr, uint8_t value) {
 	if (addr < 0x8000) {
+		fprintf(stderr, "warning: writing to read-only memory\n");
 		return;
 	}
 
@@ -74,6 +75,12 @@ void Emu_WriteReg8(uint8_t reg, uint8_t value) {
 		case 6: emu.g = value; break;
 		case 7: emu.h = value; break;
 	}
+
+	#if 0
+		const char* names = "abcdefgh";
+
+		printf("setting %c to %d\n", names[reg], (int) value);
+	#endif
 }
 
 void Emu_WriteReg16(uint8_t reg, uint16_t value) {
@@ -220,7 +227,8 @@ void Emu_RunInsts(int times) {
 	for (int i = 0; i < times; ++ i) {
 		if (emu.halted) return;
 
-		uint8_t opc = NextByte();
+		uint16_t opcAddr = emu.pc;
+		uint8_t  opc     = NextByte();
 
 		switch (opc) {
 			case 0x00: { // HALT
@@ -395,6 +403,8 @@ void Emu_RunInsts(int times) {
 			case 0x2B:   // JNS N16
 			case 0x2C:   // JC  N16
 			case 0x2D: { // JNC N16
+				uint16_t addr = NextWord();
+
 				if (
 					((opc == 0x28) && !emu.zero)  || ((opc == 0x29) && emu.zero) ||
 					((opc == 0x2A) && !emu.sign)  || ((opc == 0x2B) && emu.sign) ||
@@ -403,7 +413,7 @@ void Emu_RunInsts(int times) {
 					break;
 				}
 
-				emu.pc = NextWord();
+				emu.pc = addr;
 				break;
 			}
 			case 0x2E: { // RET
@@ -579,7 +589,7 @@ void Emu_RunInsts(int times) {
 				break;
 			}
 			default: {
-				fprintf(stderr, "Invalid opcode %.2X", opc);
+				fprintf(stderr, "Invalid opcode %.2X at %.4X\n", opc, (int) opcAddr);
 				emu.halted = true;
 			}
 		}
