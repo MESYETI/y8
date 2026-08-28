@@ -39,7 +39,7 @@ uint8_t* Emu_GetByte(uint16_t addr) {
 	return &inaccessible;
 }
 
-uint8_t  Emu_Read8(uint16_t addr) {
+uint8_t Emu_Read8(uint16_t addr) {
 	return *Emu_GetByte(addr);
 }
 

@@ -50,13 +50,13 @@ void Display_Free(void) {
 void Display_Render(void) {
 	for (int y = 0; y < CHR_H; ++ y) {
 		for (int x = 0; x < CHR_W; ++ x) {
-			uint16_t start = 0x5000 + (display.scroll * CHR_W);
-			uint8_t ch     = Emu_Read8((uint16_t) (0x5000 + x + (y * CHR_W)));
+			uint16_t start = 0xC000 + (display.scroll * CHR_W);
+			uint8_t ch     = Emu_Read8((uint16_t) (0xC000 + x + (y * CHR_W)));
 
 			bool invert = ch & 0x80? 1 : 0;
 			ch = ch & 0x7F;
 
-			uint16_t chAddr = (((uint16_t) ch) * 8) + 0x5C00;
+			uint16_t chAddr = (((uint16_t) ch) * 8) + 0xCC00;
 
 			for (int cy = 0; cy < 8; ++ cy) {
 				for (int cx = 0; cx < 8; ++ cx) {
