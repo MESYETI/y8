@@ -88,7 +88,7 @@ Flags:
 | `49`         | `01001001`   | `Rd Rs 00`               | AND  | `Rd <- Rd & Rs`                | ZS    |
 | `4A`         | `01001010`   | `Rd Rs 00`               | OR   | `Rd <- Rd | Rs`                | ZS    |
 | `4B`         | `01001011`   | `Rd Rs 00`               | XOR  | `Rd <- Rd ^ Rs`                | ZS    |
-| `4C`         | `01001100`   | `Rd`                     | NOT  | `Rd <- ~Rd`                    | ZS    |
+| `4C`         | `01001100`   | `Rd 00000`               | NOT  | `Rd <- ~Rd`                    | ZS    |
 | `4D`         | `01001101`   | `Rd Rs 00`               | ICMP | `icmp(Rd, Rs)`                 | ZSC   |
 | `4E`         | `01001110`   | `Rd 00000 N8`            | ICMP | `icmp(Rd, N8)`                 | ZSC   |
 | `4F`         | `01001111`   | `Pd Ps 0000`             | ICMP | `icmp(Pd, Ps)`                 | ZSC   |

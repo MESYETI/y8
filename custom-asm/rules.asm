@@ -22,7 +22,8 @@
 
 #ruledef
 {
-	halt                            => 0x00
+	halt => 0x00
+
 	mov {rd: r8}, {rs: r8}          => 0x10 @ rd @ rs @ 0b00
 	mov {pd: r16}, {ps: r16}        => 0x11 @ pd @ ps @ 0b0000
 	mov {rd: r8}, {value: u8}       => 0x12 @ rd @ 0b00000 @ value
@@ -35,4 +36,57 @@
 	mov [{pd: r16}], {ps: r16}      => 0x1A @ pd @ ps @ 0b000
 	mov.b [{pd: r16}], {value: u8}  => 0x1B @ pd @ 0b000000 @ value
 	mov.w [{pd: r16}], {value: u16} => 0x1C @ pd @ 0b000000 @ $le(value)
+
+	jmp {value: u16}   => 0x20 @ value
+	jmp [{value: u16}] => 0x21 @ value
+	jmp {pd: r16}      => 0x22 @ pd @ 0b000000
+	jmp [{pd: r16}]    => 0x23 @ pd @ 0b000000
+
+	call {value: u16}   => 0x24 @ value
+	call [{value: u16}] => 0x25 @ value
+	call {pd: r16}      => 0x26 @ pd @ 0b000000
+	call [{pd: r16}]    => 0x27 @ pd @ 0b000000
+
+	jz {value: u16}  => 0x28 @ value
+	jnz {value: u16} => 0x29 @ value
+	js {value: u16}  => 0x2A @ value
+	jns {value: u16} => 0x2B @ value
+	jc {value: u16}  => 0x2C @ value
+	jnc {value: u16} => 0x2D @ value
+
+	ret => 0x2E
+
+	cmp {rd: r8}, {rs: r8}    => 0x40 @ rd @ rs @ 0b00
+	cmp {rd: r8}, {value: u8} => 0x41 @ rd @ 0b00000 @ value
+	cmp {pd: r16}, {ps: r16}  => 0x42 @ pd @ ps @ 0b000000
+
+	add {rd: r8}, {rs: r8} => 0x43 @ rd @ rs @ 0b00
+	sub {rd: r8}, {rs: r8} => 0x44 @ rd @ rs @ 0b00
+	mul {rd: r8}, {rs: r8} => 0x45 @ rd @ rs @ 0b00
+	div {rd: r8}, {rs: r8} => 0x46 @ rd @ rs @ 0b00
+
+	add {pd: r16}, {rs: r8} => 0x47 @ pd @ rs @ 0b000
+	sub {pd: r16}, {rs: r8} => 0x48 @ pd @ rs @ 0b000
+
+	and {rd: r8}, {rs: r8} => 0x49 @ rd @ rs @ 0b00
+	or  {rd: r8}, {rs: r8} => 0x4A @ rd @ rs @ 0b00
+	xor {rd: r8}, {rs: r8} => 0x4B @ rd @ rs @ 0b00
+
+	not {rd: r8} => 0x4C @ rd @ 0b00000
+
+	icmp {rd: r8}, {rs: r8}    => 0x4D @ rd @ rs @ 0b00
+	icmp {rd: r8}, {value: u8} => 0x4E @ rd @ 0b00000 @ value
+	icmp {pd: r16}, {ps: r16}  => 0x4F @ pd @ ps @ 0b000000
+
+	setz => 0x50
+	clz  => 0x51
+	sets => 0x52
+	cls  => 0x53
+	setc => 0x54
+	clc  => 0x55
+
+	inc {rd: r8}  => 0x60 @ rd @ 0b00000
+	inc {pd: r16} => 0x61 @ pd @ 0b000000
+	dec {rd: r8}  => 0x62 @ rd @ 0b00000
+	dec {pd: r16} => 0x63 @ pd @ 0b000000
 }

@@ -6,7 +6,7 @@ Display display;
 
 void Display_Init(void) {
 	display.window = SDL_CreateWindow(
-		"Y8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, RES_X, RES_Y,
+		"Y8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, RES_X * 4, RES_Y * 4,
 		SDL_WINDOW_RESIZABLE
 	);
 

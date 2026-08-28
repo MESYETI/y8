@@ -1,28 +1,31 @@
 # Memory map
 
-| Address   | Description               |
-| --------- | ------------------------- |
-| 0000-4000 | ROM                       |
-| 4000-5000 | RAM                       |
-| 5000-6000 | VRAM                      |
-| 6000-7000 | RAM - mirrored            |
-| 7000-8000 | VRAM - mirrored           |
-| 8000-FFFF | Cartridge                 |
+With expanded RAM:
+| Address     | Description |
+| ----------- | ----------- |
+| 0000-3FFF   | ROM         |
+| 4000-7FFF   | Cartridge   |
+| 8000-BFFF   | RAM         |
+| C000-FFFF   | I/O         |
 
-## Ranges in binary
-```
-ROM:  0000 0000 0000 0000 to 0100 0000 0000 0000
+Without expanded RAM:
+| Address     | Description    |
+| ----------- | -------------- |
+| 0000-3FFF   | ROM            |
+| 4000-7FFF   | Cartridge      |
+| 8000-8FFF   | RAM            |
+| 9000-9FFF   | RAM (mirrored) |
+| A000-AFFF   | RAM (mirrored) |
+| B000-BFFF   | RAM (mirrored) |
+| C000-FFFF   | I/O            |
 
-RAM:  0100 0000 0000 0000 to 0101 0000 0000 0000
-
-VRAM: 0101 0000 0000 0000 to 0110 0000 0000 0000
-
-RAM:  0110 0000 0000 0000 to 0111 0000 0000 0000
-
-VRAM: 0111 0000 0000 0000 to 1000 0000 0000 0000
-
-Cart: 1000 0000 0000 0000 to end
-```
+## IO memory map
+| Address   | Description |
+| --------- | ----------- |
+| C000-CFFF | VRAM        |
+| D000-DFFF | Unused      |
+| E000-EFFF | Unused      |
+| F000-FFFF | Unused      |
 
 # Video memory
 The first 3 kilobytes store what characters are stored on screen. The final kilobyte stores

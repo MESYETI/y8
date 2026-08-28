@@ -20,18 +20,23 @@ void Emu_Init(void) {
 }
 
 uint8_t* Emu_GetByte(uint16_t addr) {
-	if (addr & 0x8000) {
-		// cart
-		return &emu.cart[addr & 0x7FFF];
+	if (addr < 0x4000) {
+		return &emu.rom[addr];
 	}
-	if ((addr & 0x4000) == 0) {
-		return &emu.rom[addr & 0x0FFF];
+	else if (addr < 0x8000) {
+		return &emu.cart[addr - 0x4000];
 	}
-	if (addr & 0x1000) {
-		return &emu.vram[addr & 0x0FFF];
+	else if (addr < 0xC000) {
+		return &emu.ram[(addr - 0x8000) % 4096];
+	}
+	else if (addr < 0xD000) {
+		return &emu.vram[addr - 0xC000];
 	}
 
-	return &emu.ram[addr & 0x0FFF];
+	fprintf(stderr, "warning: accessing out of bounds memory");
+
+	static uint8_t inaccessible;
+	return &inaccessible;
 }
 
 uint8_t  Emu_Read8(uint16_t addr) {
@@ -46,6 +51,10 @@ uint16_t Emu_Read16(uint16_t addr) {
 }
 
 void Emu_Write8(uint16_t addr, uint8_t value) {
+	if (addr < 0x8000) {
+		return;
+	}
+
 	*Emu_GetByte(addr) = value;
 }
 
