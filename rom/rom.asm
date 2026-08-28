@@ -6,7 +6,12 @@ jmp start
 ref print_at
 
 start:
+	; set up stack
 	mov sp, 0xC000
+
+	; set up keyboard
+	mov   ab,   0xD002
+	mov.b [ab], 0
 
 	mov ab, 0xC000
 	mov c,  64
@@ -29,7 +34,21 @@ start:
 
 	mov   ab, 0xC080
 	mov.b [ab], ">"
-	halt
+
+loop:
+	mov cd, 0xD000
+	mov a, 0
+	mov [cd], a
+	mov a, [cd]
+	jz loop
+
+	mov a, "A"
+	mov cd, 0xC0A0
+	mov [cd], a
+	
+	jmp loop
+
+halt
 
 header: #d " * * * *  YETI-8 ROM * * * * *  "
         #d "         MONITOR V0.1           "

@@ -3,6 +3,7 @@
 #include <string.h>
 #include "emu.h"
 #include "font.h"
+#include "keyboard.h"
 
 #define INC_16(N) ((N) == 65535? 0 : (N) + 1)
 
@@ -17,6 +18,8 @@ void Emu_Init(void) {
 	memcpy(&emu.vram[3072], font, size);
 
 	emu.halted = false;
+
+	emu.io.portA = CreateKeyboardPort();
 }
 
 uint8_t* Emu_GetByte(uint16_t addr) {
@@ -31,6 +34,9 @@ uint8_t* Emu_GetByte(uint16_t addr) {
 	}
 	else if (addr < 0xD000) {
 		return &emu.vram[addr - 0xC000];
+	}
+	else if (addr < 0xE000) {
+		return NULL;
 	}
 
 	fprintf(stderr, "warning: accessing out of bounds memory");
@@ -67,6 +73,7 @@ void Emu_Write8(uint16_t addr, uint8_t value) {
 		uint16_t ioAddr = (addr - 0xD000) % 16;
 
 		IOChip_Write(&emu.io, (uint8_t) ioAddr, value);
+		return;
 	}
 
 	#if 0
