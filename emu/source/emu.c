@@ -56,6 +56,10 @@ void Emu_Write8(uint16_t addr, uint8_t value) {
 		return;
 	}
 
+	#if 0
+		printf("Writing %d to %.4X\n", (int) value, (int) addr);
+	#endif
+
 	*Emu_GetByte(addr) = value;
 }
 

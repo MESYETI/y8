@@ -49,6 +49,7 @@ Flags:
 | Opcode (hex) | Opcode (bin) | Parameter format         | Name | Description                    | Flags | Size |
 | ------------ | ------------ | ------------------------ | ---- | ------------------------------ | ----- | ---- |
 | `00`         | `00000000`   |                          | HALT | Stops the computer             |       | 1    |
+| `01`         | `00000001`   |                          | NOP  | Does nothing                   |       | 1    |
 | `10`         | `00010000`   | `Rd Rs 00`               | MOV  | `Rd <- Rs`                     | ZS    | 2    |
 | `11`         | `00010001`   | `Pd Ps 0000`             | MOV  | `Pd <- Ps`                     | ZS    | 2    |
 | `12`         | `00010010`   | `Rd 00000 N8`            | MOV  | `Rd <- N8`                     | ZS    | 3    |

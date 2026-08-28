@@ -23,6 +23,7 @@
 #ruledef
 {
 	halt => 0x00
+	nop  => 0x01
 
 	mov {rd: r8}, {rs: r8}          => 0x10 @ rd @ rs @ 0b00
 	mov {pd: r16}, {ps: r16}        => 0x11 @ pd @ ps @ 0b0000
