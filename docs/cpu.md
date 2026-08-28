@@ -1,4 +1,6 @@
 # CPU instruction set architecture
+The Y8010 CPU is an 8-bit CPU with a 16-bit address bus.
+
 
 ## 8-bit Registers
 | Number | Name       | Use             |

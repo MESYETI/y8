@@ -28,7 +28,7 @@ start:
 	call print_at
 
 	mov   ab, 0xC080
-	mov.b [ab], 6
+	mov.b [ab], ">"
 	halt
 
 header: #d " * * * *  YETI-8 ROM * * * * *  "

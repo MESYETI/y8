@@ -40,6 +40,12 @@ uint8_t* Emu_GetByte(uint16_t addr) {
 }
 
 uint8_t Emu_Read8(uint16_t addr) {
+	if ((addr >= 0xD000) && (addr < 0xE000)) {
+		uint16_t ioAddr = (addr - 0xD000) % 16;
+
+		return IOChip_Read(&emu.io, (uint8_t) ioAddr);
+	}
+
 	return *Emu_GetByte(addr);
 }
 
@@ -55,6 +61,12 @@ void Emu_Write8(uint16_t addr, uint8_t value) {
 		fprintf(stderr, "warning: writing to read-only memory at %.4X\n", (int) addr);
 		fprintf(stderr, "PC: %.4X\n", (int) emu.pc);
 		return;
+	}
+
+	if ((addr >= 0xD000) && (addr < 0xE000)) {
+		uint16_t ioAddr = (addr - 0xD000) % 16;
+
+		IOChip_Write(&emu.io, (uint8_t) ioAddr, value);
 	}
 
 	#if 0

@@ -20,15 +20,9 @@ Without expanded RAM:
 | C000-FFFF   | I/O            |
 
 ## IO memory map
-| Address   | Description |
-| --------- | ----------- |
-| C000-CFFF | VRAM        |
-| D000-DFFF | Unused      |
-| E000-EFFF | Unused      |
-| F000-FFFF | Unused      |
-
-# Video memory
-The first 3 kilobytes store what characters are stored on screen. The final kilobyte stores
-the font.
-
-So, characters are stored from `5000` to `5C00`. And the font is stored from `5C00` to `6000`
+| Address   | Description   |
+| --------- | ------------- |
+| C000-CFFF | VRAM          |
+| D000-DFFF | Y8110 IO chip |
+| E000-EFFF | Unused        |
+| F000-FFFF | Unused        |

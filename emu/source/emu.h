@@ -1,6 +1,7 @@
 #ifndef Y8_EMU_H
 #define Y8_EMU_H
 
+#include "io.h"
 #include "common.h"
 
 typedef struct {
@@ -27,6 +28,9 @@ typedef struct {
 	bool sign;
 	bool carry;
 	bool halted;
+
+	// IO
+	IOChip io;
 } Emu;
 
 extern Emu emu;
