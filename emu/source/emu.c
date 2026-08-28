@@ -52,7 +52,8 @@ uint16_t Emu_Read16(uint16_t addr) {
 
 void Emu_Write8(uint16_t addr, uint8_t value) {
 	if (addr < 0x8000) {
-		fprintf(stderr, "warning: writing to read-only memory\n");
+		fprintf(stderr, "warning: writing to read-only memory at %.4X\n", (int) addr);
+		fprintf(stderr, "PC: %.4X\n", (int) emu.pc);
 		return;
 	}
 
@@ -376,15 +377,17 @@ void Emu_RunInsts(int times) {
 				break;
 			}
 			case 0x24: { // CALL N16
+				uint16_t addr = NextWord();
 				Push16(emu.pc);
 
-				emu.pc = NextWord();
+				emu.pc = addr;
 				break;
 			}
 			case 0x25: { // CALL [N16]
+				uint16_t addr = Emu_Read16(NextWord());
 				Push16(emu.pc);
 
-				emu.pc = Emu_Read16(NextWord());
+				emu.pc = addr;
 				break;
 			}
 			case 0x26: { // CALL Pd

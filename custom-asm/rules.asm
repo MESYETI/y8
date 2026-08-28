@@ -97,3 +97,8 @@ CART      = 0x4000
 RAM       = 0x8000
 VRAM      = 0xC000
 VRAM_FONT = 0xCC00
+
+#ruledef
+{
+	ref {label: u16} => label
+}
