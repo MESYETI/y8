@@ -3,7 +3,7 @@
 ## IO memory map
 | Address   | Description      |
 | --------- | ---------------- |
-| C000-CFFF | VRAM             |
+| C000-CFFF | Y8210 video chip |
 | D000-DFFF | Y8110 IO chip    |
 | E000-EFFF | Y8310 audio chip |
 | F000-FFFF | Expansion port   |
