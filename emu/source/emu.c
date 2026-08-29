@@ -19,7 +19,7 @@ void Emu_Init(void) {
 
 	emu.halted = false;
 
-	emu.io.portA = CreateKeyboardPort();
+	Keyboard_Init(&emu.io);
 }
 
 uint8_t* Emu_GetByte(uint16_t addr) {

@@ -3,6 +3,6 @@
 
 #include "io.h"
 
-IOPort CreateKeyboardPort(void);
+void Keyboard_Init(IOChip* chip);
 
 #endif

@@ -35,12 +35,15 @@ Flags:
 #### Notation
 - `Rd`  - 8-bit register destination
 - `Rs`  - 8-bit register source
+- `N4`  - 4-bit integer literal
 - `N8`  - 8-bit integer literal
 - `N16` - 16-bit integer literal
 - `Pd`  - 16-bit register destination
 - `Ps`  - 16-bit register source
 
 `Rd` and `Rs` each store 3 bits.
+
+`N4` stores 4 bits.
 
 `N8` stores 8 bits.
 
@@ -105,6 +108,14 @@ Flags:
 | `61`         | `01100001`   | `Pd 000000`              | INC  | `Pd = Pd + 1`                  | ZC    | 2    |
 | `62`         | `01100010`   | `Rd 00000`               | DEC  | `Rd = Rd - 1`                  | ZC    | 2    |
 | `63`         | `01100011`   | `Pd 000000`              | DEC  | `Pd = Pd - 1`                  | ZC    | 2    |
+| `64`         | `01000100`   | `Rd 0 N4`                | SHL  | `Rd = Rd << N4`                | Z     | 2    |
+| `65`         | `01000101`   | `Pd 0 N4`                | SHL  | `Pd = Pd << N4`                | Z     | 2    |
+| `66`         | `01000110`   | `Rd 0 N4`                | SHR  | `Rd = Rd >> N4`                | Z     | 2    |
+| `67`         | `01000111`   | `Pd 0 N4`                | SHR  | `Pd = Pd >> N4`                | Z     | 2    |
+| `68`         | `01001000`   | `Rd Rs 00`               | SHL  | `Rd = Rd << Rs`                | Z     | 2    |
+| `69`         | `01001001`   | `Pd Rs 000`              | SHL  | `Pd = Pd << Rs`                | Z     | 2    |
+| `6A`         | `01001010`   | `Rd Rs 00`               | SHR  | `Rd = Rd >> Rs`                | Z     | 2    |
+| `6B`         | `01001011`   | `Pd Rs 000`              | SHR  | `Pd = Pd >> Rs`                | Z     | 2    |
 
 ### Compare instruction
 Sets `Z` for equality, `S` for lesser than, and `C` for greater than.

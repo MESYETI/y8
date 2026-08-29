@@ -10,8 +10,11 @@ start:
 	mov sp, 0xC000
 
 	; set up keyboard
-	mov   ab,   0xD002
+	mov   ab,   0xD002 ; set port A to input
 	mov.b [ab], 0
+
+	mov   ab,   0xD003 ; set port B to output
+	mov.b [ab], 0xFF
 
 	mov ab, 0xC000
 	mov c,  64
@@ -38,7 +41,6 @@ start:
 loop:
 	mov cd, 0xD000
 	mov a, 0
-	mov [cd], a
 	mov a, [cd]
 	jz loop
 

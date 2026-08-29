@@ -1,12 +1,12 @@
 # I/O
 
 ## IO memory map
-| Address   | Description   |
-| --------- | ------------- |
-| C000-CFFF | VRAM          |
-| D000-DFFF | Y8110 IO chip |
-| E000-EFFF | Unused        |
-| F000-FFFF | Unused        |
+| Address   | Description      |
+| --------- | ---------------- |
+| C000-CFFF | VRAM             |
+| D000-DFFF | Y8110 IO chip    |
+| E000-EFFF | Y8310 audio chip |
+| F000-FFFF | Expansion port   |
 
 ## Video memory
 The first 3 kilobytes store what characters are stored on screen. The final kilobyte stores
