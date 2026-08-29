@@ -24,6 +24,8 @@ SH Z  X  C  V  B  N  M  CM DT SL SS AL AD AR
 - `SH` = Shift
 - `SS` = Symbol Shift
 - `SP` = Space
+- `MN` = minus
+- `EQ` = equals
 
 ## Data layout
 
@@ -119,7 +121,7 @@ Column 7
 | 8   |     |
 
 ## Interface
-Write to port B on the IO chip to select the column to read from, using these values:
+Write to port B (`0xD001`) on the IO chip to select the column to read from, using these values:
 
 | Column | Value |
 | ------ | ----- |
@@ -131,4 +133,4 @@ Write to port B on the IO chip to select the column to read from, using these va
 | 6      | 32    |
 | 7      | 64    |
 
-Read from port A to read a bitmask of the keys pressed on that column.
+Read from port A (`0xD000`) to read a bitmask of the keys pressed on that column.

@@ -3,7 +3,8 @@
 jmp start
 
 #d 0x00 ; padding
-ref print_at
+ref mem_copy
+ref key_load_state
 
 start:
 	; set up stack
@@ -33,7 +34,7 @@ start:
 	mov ab, 0xC060
 	mov cd, ram_4k
 	mov e,  6
-	call print_at
+	call mem_copy
 
 	mov   ab, 0xC080
 	mov.b [ab], ">"
@@ -59,7 +60,7 @@ ram_4k:  #d "4K RAM"
 ram_16k: #d "16K EXPANDED RAM"
 
 ; API
-print_at:
+mem_copy:
 	; AB = addr
 	; CD = string
 	; E  = len
@@ -68,5 +69,27 @@ print_at:
 	inc ab
 	inc cd
 	dec e
-	jnz print_at
+	jnz mem_copy
+	ret
+
+; Keyboard
+key_state1: #d8 0, 0, 0, 0, 0, 0, 0
+key_state2: #d8 0, 0, 0, 0, 0, 0, 0
+key_change: #d8 0, 0, 0, 0, 0, 0, 0
+
+key_load_state:
+	; AB = dest
+	mov cd, 0xD001 ; column select address
+	mov e,  1 ; column
+	mov g,  7 ; counter
+
+.loop:
+	mov [cd], e        ; select column
+	mov f,    [0xD000] ; read key bitmask
+	mov [ab], f        ; write bitmask to dest
+
+	shl e, 1
+	inc ab
+	dec g
+	jnz .loop
 	ret

@@ -614,6 +614,66 @@ void Emu_RunInsts(int times) {
 				Emu_WriteReg16(pd, v - 1);
 				break;
 			}
+			case 0x64: { // SHL Rd, N4
+				uint8_t param = NextByte();
+				DEC_RD(param);
+				param &= 0xF;
+
+				Emu_WriteReg8(rd, Emu_ReadReg8(rd) << param);
+				break;
+			}
+			case 0x65: { // SHL Pd, N4
+				uint8_t param = NextByte();
+				DEC_PD(param);
+				param &= 0xF;
+
+				Emu_WriteReg16(pd, Emu_ReadReg16(pd) << param);
+				break;
+			}
+			case 0x66: { // SHL Rd, N4
+				uint8_t param = NextByte();
+				DEC_RD(param);
+				param &= 0xF;
+
+				Emu_WriteReg8(rd, Emu_ReadReg8(rd) >> param);
+				break;
+			}
+			case 0x67: { // SHL Pd, N4
+				uint8_t param = NextByte();
+				DEC_PD(param);
+				param &= 0xF;
+
+				Emu_WriteReg16(pd, Emu_ReadReg16(pd) >> param);
+				break;
+			}
+			case 0x68: { // SHL Rd, Rs
+				uint8_t param = NextByte();
+				DEC_RD_RS(param);
+
+				Emu_WriteReg8(rd, Emu_ReadReg8(rd) << Emu_ReadReg8(rs));
+				break;
+			}
+			case 0x69: { // SHL Pd, Ps
+				uint8_t param = NextByte();
+				DEC_PD_PS(param);
+
+				Emu_WriteReg8(pd, Emu_ReadReg8(pd) << Emu_ReadReg8(ps));
+				break;
+			}
+			case 0x6A: { // SHR Rd, Rs
+				uint8_t param = NextByte();
+				DEC_RD_RS(param);
+
+				Emu_WriteReg8(rd, Emu_ReadReg8(rd) >> Emu_ReadReg8(rs));
+				break;
+			}
+			case 0x6B: { // SHR Pd, Ps
+				uint8_t param = NextByte();
+				DEC_PD_PS(param);
+
+				Emu_WriteReg8(pd, Emu_ReadReg8(pd) >> Emu_ReadReg8(ps));
+				break;
+			}
 			default: {
 				fprintf(stderr, "Invalid opcode %.2X at %.4X\n", opc, (int) opcAddr);
 				emu.halted = true;

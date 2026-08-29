@@ -90,6 +90,18 @@
 	inc {pd: r16} => 0x61 @ pd @ 0b000000
 	dec {rd: r8}  => 0x62 @ rd @ 0b00000
 	dec {pd: r16} => 0x63 @ pd @ 0b000000
+
+	shl {rd: r8},  {value: u4} => 0x64 @ rd @ 0b0  @ value
+	shl {pd: r16}, {value: u4} => 0x65 @ pd @ 0b00 @ value
+
+	shr {rd: r8},  {value: u4} => 0x66 @ rd @ 0b0  @ value
+	shr {pd: r16}, {value: u4} => 0x67 @ pd @ 0b00 @ value
+
+	shl {rd: r8}, {rs: r8}  => 0x68 @ rd @ rs @ 0b00
+	shl {pd: r16}, {rs: r8} => 0x69 @ pd @ rs @ 0b000
+
+	shr {rd: r8}, {rs: r8}  => 0x6A @ rd @ rs @ 0b00
+	shr {pd: r16}, {rs: r8} => 0x6B @ pd @ rs @ 0b000
 }
 
 ROM       = 0x0000
