@@ -44,3 +44,5 @@ make
 ```
 
 Requires `customasm`
+
+To use the ROM in the emulator, put the `rom.bin` in the `emu` folder
