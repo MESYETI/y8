@@ -40,6 +40,9 @@ start:
 	mov.b [ab], ">"
 
 loop:
+	mov cd, 0xC0A0
+	mov.b [cd], " "
+
 	mov cd, 0xD000
 	mov a, 0
 	mov a, [cd]

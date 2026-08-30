@@ -19,6 +19,8 @@ void Emu_Init(void) {
 
 	emu.halted = false;
 
+	IOChip_Init(&emu.io);
+
 	Keyboard_Init(&emu.io);
 }
 

@@ -2,6 +2,7 @@
 #include "emu.h"
 #include "util.h"
 #include "display.h"
+#include "printer.h"
 
 App app;
 
@@ -27,6 +28,15 @@ void App_Init(int argc, char** argv) {
 	}
 	else {
 		fprintf(stderr, "warning: no rom loaded\n");
+	}
+
+	for (int i = 1; i < argc; ++ i) {
+		if (strcmp(argv[i], "--serial=printer") == 0) {
+			emu.io.serial = PrinterDevice();
+		}
+		else {
+			fprintf(stderr, "Unknown flag '%s'\n", argv[i]);
+		}
 	}
 }
 

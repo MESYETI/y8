@@ -1,5 +1,11 @@
 #include "io.h"
 
+void IOChip_Init(IOChip* chip) {
+	chip->portA  = (IOPort) {NULL, NULL};
+	chip->portB  = (IOPort) {NULL, NULL};
+	chip->serial = (SerialDevice) {NULL, NULL};
+}
+
 uint8_t IOChip_Read(IOChip* chip, uint8_t addr) {
 	switch (addr) {
 		case 0x00:
@@ -15,6 +21,11 @@ uint8_t IOChip_Read(IOChip* chip, uint8_t addr) {
 		case 0x05: return (uint8_t) ((chip->timerA & 0xFF00) >> 8);
 		case 0x06: return (uint8_t) (chip->timerB & 0xFF);
 		case 0x07: return (uint8_t) ((chip->timerB & 0xFF00) >> 8);
+		case 0x0C: {
+			if (chip->serial.read) {
+				return chip->serial.read();
+			}
+		}
 		default: break;
 	}
 
@@ -51,6 +62,12 @@ void IOChip_Write(IOChip* chip, uint8_t addr, uint8_t value) {
 		case 0x07: {
 			chip->timerB &= 0x00FF;
 			chip->timerB |= ((uint16_t) value) << 8;
+			break;
+		}
+		case 0x0C: {
+			if (chip->serial.write) {
+				chip->serial.write(value);
+			}
 			break;
 		}
 		default: break;
