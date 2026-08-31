@@ -25,6 +25,20 @@ void Emu_Init(void) {
 	Keyboard_Init(&emu.io);
 }
 
+void Emu_LoadCart(const char* path) {
+	FILE* file = fopen(path, "rb");
+
+	if (!file) {
+		fprintf(stderr, "error: failed to load cartridge '%s'\n", path);
+		exit(1);
+	}
+
+	size_t res = fread(emu.cart, 1, sizeof(emu.cart), file);
+
+	printf("cart: loaded %d bytes\n", (int) res);
+	fclose(file);
+}
+
 uint8_t* Emu_GetByte(uint16_t addr) {
 	if (addr < 0x4000) {
 		return &emu.rom[addr];

@@ -9,6 +9,7 @@ Parameters are stored in A, B, C, D, E. A result may be stored in A. All registe
 as scratch registers.
 
 ## Calls
-| Address | Function      | A          | B          | C          | D          | E          | Result  |
-| ------- | ------------- | ---------- | ---------- | ---------- | ---------- | ---------- | ------- |
-| 0x0004  | print_at      | AB=addr    |            | CD=string  |            | length     |         |
+| Address | Function         | A          | B          | C          | D          | E          | Result  |
+| ------- | ---------------- | ---------- | ---------- | ---------- | ---------- | ---------- | ------- |
+| 0x0004  | `print_at`       | AB=addr    |            | CD=string  |            | length     |         |
+| 0x0006  | `key_load_state` | AB=dest    |            |            |            |            |         |

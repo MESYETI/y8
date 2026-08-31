@@ -39,18 +39,8 @@ start:
 	mov   ab, 0xC180
 	mov.b [ab], ">"
 
-loop:
-	mov cd, 0xD000
-	mov a, 0
-	mov a, [cd]
-	jz loop
-
-	mov b, "A"
-	mov cd, 0xC1A0
-	add cd, a
-	mov [cd], b
-	
-	jmp loop
+	; boot straight to cartridge
+	jmp 0x4000
 
 halt
                       

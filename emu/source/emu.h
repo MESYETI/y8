@@ -8,7 +8,7 @@ typedef struct {
 	// memory
 	uint8_t rom[4096];
 	uint8_t ram[4096];
-	uint8_t cart[32768];
+	uint8_t cart[16384];
 
 	// registers
 	uint8_t  a;
@@ -35,6 +35,7 @@ typedef struct {
 extern Emu emu;
 
 void     Emu_Init(void);
+void     Emu_LoadCart(const char* path);
 uint8_t* Emu_GetByte(uint16_t addr);
 uint8_t  Emu_Read8(uint16_t addr);
 uint16_t Emu_Read16(uint16_t addr);

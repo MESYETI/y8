@@ -6,7 +6,18 @@
 
 App app;
 
+#define APP_USAGE \
+	"Usage: %s FLAGS\n\n" \
+	"Flags:\n" \
+	"    --serial=DEVICE, where DEVICE = `printer`\n" \
+	"    --cart FILE\n"
+
 void App_Init(int argc, char** argv) {
+	if ((argc > 1) && strcmp(argv[1], "--help") == 0) {
+		printf(APP_USAGE, argv[0]);
+		exit(0);
+	}
+
 	app.running = true;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -33,6 +44,16 @@ void App_Init(int argc, char** argv) {
 	for (int i = 1; i < argc; ++ i) {
 		if (strcmp(argv[i], "--serial=printer") == 0) {
 			emu.io.serial = PrinterDevice();
+		}
+		else if (strcmp(argv[i], "--cart") == 0) {
+			++ i;
+
+			if (i >= argc) {
+				fprintf(stderr, "--cart requires FILE flag\n");
+				exit(1);
+			}
+
+			Emu_LoadCart(argv[i]);
 		}
 		else {
 			fprintf(stderr, "Unknown flag '%s'\n", argv[i]);
