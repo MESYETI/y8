@@ -14,13 +14,20 @@ typedef struct {
 	SDL_Texture*  texture;
 	uint32_t*     pixels;
 
-	uint16_t scroll;
+	uint8_t charBuf[0x300];
+	uint8_t charSet[2048];
+	uint8_t setRaster;
+	uint8_t rasterCount;
+	bool    enableInterrupt;
+	bool    interruptFlag;
 } Display;
 
 extern Display display;
 
-void Display_Init(void);
-void Display_Free(void);
-void Display_Render(void);
+void    Display_Init(void);
+void    Display_Free(void);
+void    Display_Write(uint16_t addr, uint8_t value);
+uint8_t Display_Read(uint16_t addr);
+void    Display_Render(void);
 
 #endif

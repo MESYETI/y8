@@ -3,6 +3,7 @@
 #include <string.h>
 #include "emu.h"
 #include "font.h"
+#include "display.h"
 #include "keyboard.h"
 
 #define INC_16(N) ((N) == 65535? 0 : (N) + 1)
@@ -15,7 +16,7 @@ void Emu_Init(void) {
 
 	printf("font is %d bytes\n", (int) size);
 
-	memcpy(&emu.vram[3072], font, size);
+	memcpy(display.charSet, font, size);
 
 	emu.halted = false;
 
@@ -35,7 +36,7 @@ uint8_t* Emu_GetByte(uint16_t addr) {
 		return &emu.ram[(addr - 0x8000) % 4096];
 	}
 	else if (addr < 0xD000) {
-		return &emu.vram[addr - 0xC000];
+		return NULL;
 	}
 	else if (addr < 0xE000) {
 		return NULL;
@@ -52,6 +53,9 @@ uint8_t Emu_Read8(uint16_t addr) {
 		uint16_t ioAddr = (addr - 0xD000) % 16;
 
 		return IOChip_Read(&emu.io, (uint8_t) ioAddr);
+	}
+	if ((addr >= 0xC000) && (addr < 0xD000)) {
+		return Display_Read(addr - 0xC000);
 	}
 
 	return *Emu_GetByte(addr);
@@ -75,6 +79,11 @@ void Emu_Write8(uint16_t addr, uint8_t value) {
 		uint16_t ioAddr = (addr - 0xD000) % 16;
 
 		IOChip_Write(&emu.io, (uint8_t) ioAddr, value);
+		return;
+	}
+
+	if ((addr >= 0xC000) && (addr < 0xD000)) {
+		Display_Write(addr - 0xC000, value);
 		return;
 	}
 

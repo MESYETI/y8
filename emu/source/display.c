@@ -34,7 +34,6 @@ void Display_Init(void) {
 	}
 
 	display.pixels = SafeMalloc(RES_X * RES_Y * 4);
-	display.scroll = 0;
 
 	for (int i = 0; i < RES_X * RES_Y; ++ i) {
 		display.pixels[i] = 0xFFCCCCCC;
@@ -47,11 +46,61 @@ void Display_Free(void) {
 	if (display.window)   SDL_DestroyWindow(display.window);
 }
 
+void Display_Write(uint16_t addr, uint8_t value) {
+	if (addr < 0x100) {
+		switch (addr) {
+			case 0x00: { // border colour
+				break; // TODO
+			}
+			case 0x01: { // raster counter
+				break;
+			}
+			case 0x02: { // interrupt flag
+				display.enableInterrupt = (value & 1)? true : false;
+				break;
+			}
+		}
+
+		return;
+	}
+	else if (addr < 0x400) {
+		display.charBuf[addr - 0x100] = value;
+	}
+	else if (addr >= 0xC00) {
+		display.charSet[addr - 0xC00] = value;
+	}
+}
+
+uint8_t Display_Read(uint16_t addr) {
+	if (addr < 0x100) {
+		switch (addr) {
+			case 0x00: { // border colour
+				return 0;
+			}
+			case 0x01: { // raster counter
+				return display.rasterCount;
+			}
+			case 0x02: {
+				return display.interruptFlag? 1 : 0;
+			}
+		}
+
+		return 0;
+	}
+	else if (addr < 0x400) {
+		return display.charBuf[addr - 0x100];
+	}
+	else if (addr >= 0xC00) {
+		return display.charSet[addr - 0xC00]; // TODO: make this write-only?
+	}
+
+	return 0;
+}
+
 void Display_Render(void) {
 	for (int y = 0; y < CHR_H; ++ y) {
 		for (int x = 0; x < CHR_W; ++ x) {
-			uint16_t start = 0xC000 + (display.scroll * CHR_W);
-			uint8_t ch     = Emu_Read8((uint16_t) (0xC000 + x + (y * CHR_W)));
+			uint8_t ch     = Emu_Read8((uint16_t) (0xC100 + x + (y * CHR_W)));
 
 			bool invert = ch & 0x80? 1 : 0;
 			ch = ch & 0x7F;

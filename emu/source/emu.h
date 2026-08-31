@@ -8,7 +8,6 @@ typedef struct {
 	// memory
 	uint8_t rom[4096];
 	uint8_t ram[4096];
-	uint8_t vram[4096];
 	uint8_t cart[32768];
 
 	// registers

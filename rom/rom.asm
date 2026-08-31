@@ -17,7 +17,7 @@ start:
 	mov   ab,   0xD003 ; set port B to output
 	mov.b [ab], 0xFF
 
-	mov ab, 0xC000
+	mov ab, 0xC100
 	mov c,  64
 	mov ef, header
 
@@ -31,33 +31,31 @@ start:
 
 .printRam:
 	; TODO: detect RAM expansion
-	mov ab, 0xC060
+	mov ab, 0xC160
 	mov cd, ram_4k
 	mov e,  6
 	call mem_copy
 
-	mov   ab, 0xC080
+	mov   ab, 0xC180
 	mov.b [ab], ">"
 
 loop:
-	mov cd, 0xC0A0
-	mov.b [cd], " "
-
 	mov cd, 0xD000
 	mov a, 0
 	mov a, [cd]
 	jz loop
 
-	mov a, "A"
-	mov cd, 0xC0A0
-	mov [cd], a
+	mov b, "A"
+	mov cd, 0xC1A0
+	add cd, a
+	mov [cd], b
 	
 	jmp loop
 
 halt
-
-header: #d " * * * *  YETI-8 ROM * * * * *  "
-        #d "         MONITOR V0.1           "
+                      
+header: #d " * * * * * YETI-8 ROM * * * * * "
+        #d "          MONITOR V0.1          "
 
 ram_4k:  #d "4K RAM"
 ram_16k: #d "16K EXPANDED RAM"
