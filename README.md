@@ -1,5 +1,5 @@
 # YETI-8
-YETI-8 is an incomplete fantasy computer inspired by the ZX81.
+YETI-8 is an incomplete fantasy computer slightly inspired by the ZX81.
 
 See the `docs` folder for more information
 
