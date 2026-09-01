@@ -44,6 +44,14 @@ void IOChip_Write(IOChip* chip, uint8_t addr, uint8_t value) {
 			port->write(value, mask);
 			break;
 		}
+		case 0x02: {
+			chip->dirA = value;
+			break;
+		}
+		case 0x03: {
+			chip->dirB = value;
+			break;
+		}
 		case 0x04: {
 			chip->timerA &= 0xFF00;
 			chip->timerA |= value;
