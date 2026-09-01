@@ -1,4 +1,4 @@
-#addr 0x4000
+#bank cartridge
 
 mov a, 8
 mov b, 4
