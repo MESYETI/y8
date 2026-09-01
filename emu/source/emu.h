@@ -49,5 +49,6 @@ void     Emu_WriteReg16(uint8_t reg, uint16_t value);
 uint8_t  Emu_ReadReg8(uint8_t reg);
 uint16_t Emu_ReadReg16(uint16_t reg);
 void     Emu_RunInsts(int times);
+void     Emu_Dump(void);
 
 #endif
