@@ -30,6 +30,9 @@ typedef struct {
 
 	// IO
 	IOChip io;
+
+	// options
+	bool testMode;
 } Emu;
 
 extern Emu emu;

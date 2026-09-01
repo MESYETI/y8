@@ -31,8 +31,8 @@ colour, and 128 more characters in the font. It uses this new memory map:
 | C100-C3FF | Character buffer         |
 | C400-C6FF | Colour buffer            |
 | C700-C7FF | Unused                   |
-| C800-CFFF | Character set 2nd half   |
-| CC00-CFFF | Character set 1st half   |
+| C800-CBFF | Character set 1st half   |
+| CC00-CFFF | Character set 2nd half   |
 
 Each cell has a foreground and a background colour stored in the colour buffer, where the
 high nibble is the foreground and the low nibble is the background.
@@ -65,3 +65,6 @@ line is reached.
 | --- | ----------------------------- | 
 | 0   | Enable colour                 |
 | 1   | Enable 2nd character set half |
+
+If the 2nd character set half is enabled, then the character set begins at `C800`. If it
+is not enabled, the character set begins at `CC00`.

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include "app.h"
 #include "emu.h"
 #include "font.h"
 #include "display.h"
@@ -23,6 +24,8 @@ void Emu_Init(void) {
 	IOChip_Init(&emu.io);
 
 	Keyboard_Init(&emu.io);
+
+	emu.testMode = false;
 }
 
 void Emu_LoadCart(const char* path) {
@@ -240,6 +243,22 @@ static uint16_t Pop16(void) {
 	return ret;
 }
 
+static void FinishTestMode(void) {
+	printf("$$$ reg a %.2X\n", emu.a);
+	printf("$$$ reg b %.2X\n", emu.b);
+	printf("$$$ reg c %.2X\n", emu.c);
+	printf("$$$ reg d %.2X\n", emu.d);
+	printf("$$$ reg e %.2X\n", emu.e);
+	printf("$$$ reg f %.2X\n", emu.f);
+	printf("$$$ reg g %.2X\n", emu.g);
+	printf("$$$ reg h %.2X\n", emu.h);
+	printf("$$$ reg sp %.4X\n", emu.sp);
+	printf("$$$ reg ab %.4X\n", Emu_ReadReg16(0));
+	printf("$$$ reg cd %.4X\n", Emu_ReadReg16(1));
+	printf("$$$ reg ef %.4X\n", Emu_ReadReg16(2));
+	app.running = false;
+}
+
 #define DEC_RD_RS(B) \
 	uint8_t rd = (B & 0xE0) >> 5; \
 	uint8_t rs = (B & 0x1C) >> 2
@@ -284,6 +303,10 @@ void Emu_RunInsts(int times) {
 				printf("computer halted\n");
 
 				emu.halted = true;
+
+				if (emu.testMode) {
+					FinishTestMode();
+				}
 				break;
 			}
 			case 0x10: { // MOV Rd, Rs
@@ -700,7 +723,7 @@ void Emu_RunInsts(int times) {
 				break;
 			}
 			default: {
-				fprintf(stderr, "Invalid opcode %.2X at %.4X\n", opc, (int) opcAddr);
+				fprintf(stderr, "error: Invalid opcode %.2X at %.4X\n", opc, (int) opcAddr);
 				emu.halted = true;
 			}
 		}

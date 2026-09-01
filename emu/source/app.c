@@ -10,7 +10,8 @@ App app;
 	"Usage: %s FLAGS\n\n" \
 	"Flags:\n" \
 	"    --serial=DEVICE, where DEVICE = `printer`\n" \
-	"    --cart FILE\n"
+	"    --cart FILE\n" \
+	"    --rom  FILE\n (default = ./rom.bin)"
 
 void App_Init(int argc, char** argv) {
 	if ((argc > 1) && strcmp(argv[1], "--help") == 0) {
@@ -28,18 +29,7 @@ void App_Init(int argc, char** argv) {
 	Emu_Init();
 	Display_Init();
 
-	FILE* rom = fopen("rom.bin", "rb");
-
-	if (rom) {
-		size_t res = fread(emu.rom, 1, sizeof(emu.rom), rom);
-
-		printf("rom: loaded %d bytes\n", (int) res);
-
-		fclose(rom);
-	}
-	else {
-		fprintf(stderr, "warning: no rom loaded\n");
-	}
+	const char* romPath = "rom.bin";
 
 	for (int i = 1; i < argc; ++ i) {
 		if (strcmp(argv[i], "--serial=printer") == 0) {
@@ -55,9 +45,38 @@ void App_Init(int argc, char** argv) {
 
 			Emu_LoadCart(argv[i]);
 		}
+		else if (strcmp(argv[i], "--test") == 0) {
+			emu.testMode = true;
+			puts("enabled test mode");
+		}
+		else if (strcmp(argv[i], "--rom") == 0) {
+			++ i;
+
+			if (i >= argc) {
+				fprintf(stderr, "--rom requires FILE flag\n");
+				exit(1);
+			}
+
+			romPath = argv[i];
+		}
 		else {
 			fprintf(stderr, "Unknown flag '%s'\n", argv[i]);
 		}
+	}
+
+	FILE* rom = fopen(romPath, "rb");
+
+	if (rom) {
+		printf("rom: loading '%s'\n", romPath);
+
+		size_t res = fread(emu.rom, 1, sizeof(emu.rom), rom);
+
+		printf("rom: loaded %d bytes\n", (int) res);
+
+		fclose(rom);
+	}
+	else {
+		fprintf(stderr, "warning: no rom loaded\n");
 	}
 }
 

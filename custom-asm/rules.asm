@@ -114,3 +114,11 @@ VRAM_FONT = 0xCC00
 {
 	ref {label: u16} => label
 }
+
+#bankdef cartridge
+{
+	bits = 8
+	addr = 0x4000
+	size = 0x4000
+	outp = 0
+}
