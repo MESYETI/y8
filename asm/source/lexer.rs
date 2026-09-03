@@ -1,6 +1,7 @@
 use std::fs;
+use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum TokenType {
 	Label,
 	Hashtag,
@@ -9,6 +10,8 @@ pub enum TokenType {
 	Comma,
 	LSquare,
 	RSquare,
+	LParen,
+	RParen,
 	String,
 	Line
 }
@@ -68,8 +71,23 @@ impl Lexer {
 	pub fn lex_code(&mut self, code: String) -> bool {
 		let mut i = 0;
 
+		let mut symbolTokens = HashMap::from([
+			('#', TokenType::Hashtag),
+			(',', TokenType::Comma),
+			('[', TokenType::LSquare),
+			(']', TokenType::RSquare),
+			('(', TokenType::LParen),
+			(')', TokenType::RParen)
+		]);
+
 		while i < code.len() {
 			let ch = code.chars().nth(i).unwrap();
+
+			if symbolTokens.contains_key(&ch) {
+				self.add_token(Token {
+					tokenType: *symbolTokens.get(&ch).unwrap(), contents: None
+				});
+			}
 
 			if self.mode == LexerMode::Token {
 				match ch {
@@ -94,16 +112,6 @@ impl Lexer {
 					'#' => {
 						// TODO: check if reading is empty or not
 						self.add_token(Token {tokenType: TokenType::Hashtag, contents: None});
-					},
-					',' => {
-						// ditto
-						self.add_token(Token {tokenType: TokenType::Comma, contents: None});
-					},
-					'[' => {
-						self.add_token(Token {tokenType: TokenType::LSquare, contents: None});
-					},
-					']' => {
-						self.add_token(Token {tokenType: TokenType::RSquare, contents: None});
 					},
 					'"' => {
 						self.mode = LexerMode::String;
