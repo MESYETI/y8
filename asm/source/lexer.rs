@@ -87,6 +87,7 @@ impl Lexer {
 				self.add_token(Token {
 					tokenType: *symbolTokens.get(&ch).unwrap(), contents: None
 				});
+				continue;
 			}
 
 			if self.mode == LexerMode::Token {
