@@ -1,13 +1,17 @@
+#[allow(non_snake_case)]
+
 mod lexer;
 
 use std::env;
 use std::process;
 
+use crate::lexer::Lexer;
+
 fn main() {
     let args: Vec<_> = env::args().collect();
 
-    let inFile:  Option<String> = None;
-    let outFile: Option<String> = None;
+    let mut inFile:  Option<String> = None;
+    let mut outFile: Option<String> = None;
 
     let mut i = 1;
 
@@ -32,9 +36,23 @@ fn main() {
 			}
 		}
 		else {
-			
+			inFile = Some(args[i].to_string());
 		}
 
     	i += 1;
     }
+
+    if inFile.is_none() {
+    	eprintln!("Assembler requires input file");
+    	process::exit(1);
+    }
+
+    let mut lexer = Lexer::new(&inFile.unwrap());
+
+    if !lexer.run() {
+    	eprintln!("Lexer failed");
+    	process::exit(1);
+    }
+
+    lexer.print_result();
 }
