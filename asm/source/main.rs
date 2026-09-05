@@ -1,24 +1,26 @@
 #[allow(non_snake_case)]
 
 mod lexer;
+mod error;
 
 use std::env;
 use std::process;
 
 use crate::lexer::Lexer;
+use crate::error::ErrorSystem;
 
 fn main() {
-    let args: Vec<_> = env::args().collect();
+	let args: Vec<_> = env::args().collect();
 
-    let mut inFile:  Option<String> = None;
-    let mut outFile: Option<String> = None;
+	let mut inFile:  Option<String> = None;
+	let mut outFile: Option<String> = None;
 
-    let mut i = 1;
+	let mut i = 1;
 
-    while i < args.len() {
-    	if args[i].len() == 0 {
-    		continue;
-    	}
+	while i < args.len() {
+		if args[i].len() == 0 {
+			continue;
+		}
 
 		if args[i].chars().nth(0).unwrap() == '-' {
 			match args[i].as_str() {
@@ -29,6 +31,8 @@ fn main() {
 						eprintln!("-o flag expects FILE parameter");
 						process::exit(1);
 					}
+
+					outFile = Some(args[i].to_string());
 				},
 				_ => {
 					eprintln!("Invalid flag: '{}'", args[i]);
@@ -39,20 +43,23 @@ fn main() {
 			inFile = Some(args[i].to_string());
 		}
 
-    	i += 1;
-    }
+		i += 1;
+	}
 
-    if inFile.is_none() {
-    	eprintln!("Assembler requires input file");
-    	process::exit(1);
-    }
+	if inFile.is_none() {
+		eprintln!("Assembler requires input file");
+		process::exit(1);
+	}
 
-    let mut lexer = Lexer::new(&inFile.unwrap());
+	let mut errorSys = ErrorSystem::new();
 
-    if !lexer.run() {
-    	eprintln!("Lexer failed");
-    	process::exit(1);
-    }
+	let binding = inFile.unwrap();
+	let mut lexer = Lexer::new(&binding, &mut errorSys);
 
-    lexer.print_result();
+	if !lexer.run() {
+		eprintln!("Lexer failed");
+		process::exit(1);
+	}
+
+	lexer.print_result();
 }

@@ -1,5 +1,6 @@
 use std::fs;
-use std::collections::HashMap;
+use crate::error::ErrorSystem;
+use crate::error::ErrorInfo;
 
 #[derive(Debug, Clone, Copy)]
 pub enum TokenType {
@@ -25,44 +26,55 @@ pub enum LexerMode {
 #[derive(Debug)]
 pub struct Token {
 	tokenType: TokenType,
-	contents:  Option<String>
+	contents:  Option<String>,
+	error:     ErrorInfo
 }
 
-pub struct Lexer {
-	file:    String,
-	line:    u32,
-	col:     u32,
-	reading: String,
-	tokens:  Vec<Token>,
-	mode:    LexerMode
+pub struct Lexer<'a> {
+	file:             String,
+	fileIdx:          usize,
+	line:             usize,
+	col:              usize,
+	reading:          String,
+	tokens:           Vec<Token>,
+	mode:             LexerMode,
+	errorSys: &'a mut ErrorSystem
 }
 
-impl Lexer {
-	pub fn new(file: &str) -> Lexer {
+impl Lexer<'_> {
+	pub fn new<'a>(file: &'a str, errorSys: &'a mut ErrorSystem) -> Lexer<'a> {
 		return Lexer {
-			file:    file.to_string(),
-			line:    0,
-			col:     0,
-			reading: String::new(),
-			tokens:  Vec::new(),
-			mode:    LexerMode::Token
+			file:     file.to_string(),
+			fileIdx:  errorSys.add_file(file),
+			line:     0,
+			col:      0,
+			reading:  String::new(),
+			tokens:   Vec::new(),
+			mode:     LexerMode::Token,
+			errorSys: errorSys
 		};
 	}
 
-	pub fn add_token(&mut self, token: Token) {
-		self.tokens.push(token);
+	pub fn get_error(&mut self) -> ErrorInfo {
+		return ErrorInfo::new(self.fileIdx, self.line, self.col);
+	}
+
+	pub fn add_token(&mut self, tokenType: TokenType, contents: Option<String>) {
+		let error = self.get_error();
+
+		self.tokens.push(Token {tokenType: tokenType, contents: contents, error: error});
 	}
 
 	pub fn add_reading(&mut self) {
+		if self.reading.trim().is_empty() {
+			return;
+		}
+
 		if self.reading.parse::<u64>().is_ok() {
-			self.add_token(Token {
-				tokenType: TokenType::Integer, contents: Some(self.reading.trim().to_string())
-			});
+			self.add_token(TokenType::Integer, Some(self.reading.trim().to_string()));
 		}
 		else {
-			self.add_token(Token {
-				tokenType: TokenType::Identifier, contents: Some(self.reading.trim().to_string())
-			});
+			self.add_token(TokenType::Identifier, Some(self.reading.trim().to_string()));
 		}
 
 		self.reading = String::new();
@@ -71,25 +83,28 @@ impl Lexer {
 	pub fn lex_code(&mut self, code: String) -> bool {
 		let mut i = 0;
 
-		let mut symbolTokens = HashMap::from([
-			('#', TokenType::Hashtag),
-			(',', TokenType::Comma),
-			('[', TokenType::LSquare),
-			(']', TokenType::RSquare),
-			('(', TokenType::LParen),
-			(')', TokenType::RParen)
-		]);
-
 		while i < code.len() {
 			let ch = code.chars().nth(i).unwrap();
 
-			if symbolTokens.contains_key(&ch) {
-				self.add_token(Token {
-					tokenType: *symbolTokens.get(&ch).unwrap(), contents: None
-				});
-			}
-
 			if self.mode == LexerMode::Token {
+				let symbolTok = match ch {
+					'#' => Some(TokenType::Hashtag),
+					',' => Some(TokenType::Comma),
+					'[' => Some(TokenType::LSquare),
+					']' => Some(TokenType::RSquare),
+					'(' => Some(TokenType::LParen),
+					')' => Some(TokenType::RParen),
+					_   => None
+				};
+
+				if symbolTok.is_some() {
+					self.add_reading();
+					self.add_token(symbolTok.unwrap(), None);
+
+					i += 1;
+					continue;
+				}
+
 				match ch {
 					' ' | '\n' | '\t' => 'label: {
 						if self.reading.trim().is_empty() {
@@ -99,19 +114,13 @@ impl Lexer {
 						self.add_reading();
 
 						if ch == '\n' {
-							self.add_token(Token {tokenType: TokenType::Line, contents: None});
+							self.add_token(TokenType::Line, None);
 						}
 					},
 					':' => {
-						self.add_token(Token {
-							tokenType: TokenType::Label, contents: Some(self.reading.clone())
-						});
+						self.add_token(TokenType::Label, Some(self.reading.clone()));
 
 						self.reading = String::new();
-					},
-					'#' => {
-						// TODO: check if reading is empty or not
-						self.add_token(Token {tokenType: TokenType::Hashtag, contents: None});
 					},
 					'"' => {
 						self.mode = LexerMode::String;
@@ -124,9 +133,7 @@ impl Lexer {
 			else if self.mode == LexerMode::String {
 				match ch {
 					'"' => {
-						self.add_token(Token {
-							tokenType: TokenType::String, contents: Some(self.reading.clone())
-						});
+						self.add_token(TokenType::String, Some(self.reading.clone()));
 
 						self.reading = String::new();
 					},
