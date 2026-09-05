@@ -4,19 +4,13 @@ use crate::ErrorSystem;
 use crate::error::ErrorInfo;
 
 #[derive(Debug, Clone)]
-pub struct InstructionNode {
-	name: String,
-	params: Vec<Node>
-}
-
-#[derive(Debug, Clone)]
 pub enum Node {
 	Register(String),
 	Int(u64),
 	String(String),
 	Label(String),
 	Identifier(String),
-	Instruction(InstructionNode)
+	Instruction {name: String, params: Vec<Node>}
 }
 
 pub struct Parser<'a> {
@@ -112,9 +106,7 @@ impl Parser<'_> {
 			}
 		}
 
-		return Some(Node::Instruction(InstructionNode {
-			name: name.to_string(), params: params.to_owned()
-		}));
+		return Some(Node::Instruction {name: name.to_string(), params: params.to_owned()});
 	}
 
 	fn parse_label(&mut self) -> Option<Node> {
