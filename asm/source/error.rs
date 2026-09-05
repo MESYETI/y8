@@ -1,8 +1,10 @@
-#[derive(Debug)]
+use std::process;
+
+#[derive(Debug, Clone)]
 pub struct ErrorInfo {
-	file: usize,
-	line: usize,
-	col:  usize
+	pub file: usize,
+	pub line: usize,
+	pub col:  usize
 }
 
 impl ErrorInfo {
@@ -11,13 +13,19 @@ impl ErrorInfo {
 	}
 }
 
+pub struct Error {
+	pub info: ErrorInfo,
+	pub msg:  String
+}
+
 pub struct ErrorSystem {
-	fileStack: Vec<String>
+	fileStack: Vec<String>,
+	errors:    Vec<Error>
 }
 
 impl ErrorSystem {
 	pub fn new() -> ErrorSystem {
-		return ErrorSystem {fileStack: Vec::new()};
+		return ErrorSystem {fileStack: Vec::new(), errors: Vec::new()};
 	}
 
 	pub fn add_file(&mut self, file: &str) -> usize {
@@ -32,5 +40,33 @@ impl ErrorSystem {
 		else {
 			return Some(&self.fileStack[idx]);
 		}
+	}
+
+	pub fn add(&mut self, error: ErrorInfo, msg: &str) {
+		self.errors.push(Error {info: error, msg: msg.to_string()});
+	}
+
+	pub fn print_error(&self, error: &Error) {
+		let fileName = &self.fileStack[error.info.file];
+
+		eprintln!(
+			"\x1b[0;30merror:\x1b[0m {}:{}:{}: {}",
+			fileName, error.info.line, error.info.col, error.msg
+		);
+	}
+
+	pub fn print_errors(&self) {
+		for error in self.errors.iter() {
+			self.print_error(error);
+		}
+	}
+
+	pub fn crash_if_error(&self) {
+		if self.errors.is_empty() {
+			return;
+		}
+
+		self.print_errors();
+		process::exit(1);
 	}
 }

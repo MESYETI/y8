@@ -1,19 +1,25 @@
-#[allow(non_snake_case)]
+#![allow(non_snake_case)]
 
 mod lexer;
 mod error;
+mod parser;
 
 use std::env;
 use std::process;
 
 use crate::lexer::Lexer;
 use crate::error::ErrorSystem;
+use crate::parser::Parser;
 
 fn main() {
 	let args: Vec<_> = env::args().collect();
 
 	let mut inFile:  Option<String> = None;
 	let mut outFile: Option<String> = None;
+
+	// flags
+	let mut printTok = false;
+	let mut printAST = false;
 
 	let mut i = 1;
 
@@ -34,8 +40,15 @@ fn main() {
 
 					outFile = Some(args[i].to_string());
 				},
+				"-ld" => {
+					printTok = true;
+				},
+				"-pd" => {
+					printAST = true;
+				},
 				_ => {
 					eprintln!("Invalid flag: '{}'", args[i]);
+					process::exit(1);
 				}
 			}
 		}
@@ -53,13 +66,40 @@ fn main() {
 
 	let mut errorSys = ErrorSystem::new();
 
-	let binding = inFile.unwrap();
-	let mut lexer = Lexer::new(&binding, &mut errorSys);
+	let mut tokens = Vec::new();
 
-	if !lexer.run() {
-		eprintln!("Lexer failed");
-		process::exit(1);
+	{
+		let binding = inFile.unwrap();
+		let mut lexer = Lexer::new(&binding, &mut errorSys);
+
+		if !lexer.run() {
+			errorSys.crash_if_error();
+
+			eprintln!("Lexer failed");
+			process::exit(1);
+		}
+
+		if printTok {
+			lexer.print_result();
+			process::exit(0);
+		}
+
+		tokens = lexer.get_tokens().to_owned();
 	}
 
-	lexer.print_result();
+	{
+		let mut parser = Parser::new(&tokens, &mut errorSys);
+
+		if parser.parse().is_none() {
+			errorSys.crash_if_error();
+
+			eprintln!("Parser failed");
+			process::exit(1);
+		}
+
+		if printAST {
+			parser.print_ast();
+			process::exit(0);
+		}
+	}
 }

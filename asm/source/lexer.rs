@@ -2,7 +2,7 @@ use std::fs;
 use crate::error::ErrorSystem;
 use crate::error::ErrorInfo;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum TokenType {
 	Label,
 	Hashtag,
@@ -23,11 +23,11 @@ pub enum LexerMode {
 	String
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
-	tokenType: TokenType,
-	contents:  Option<String>,
-	error:     ErrorInfo
+	pub tokenType: TokenType,
+	pub contents:  Option<String>,
+	pub error:     ErrorInfo
 }
 
 pub struct Lexer<'a> {
@@ -53,6 +53,10 @@ impl Lexer<'_> {
 			mode:     LexerMode::Token,
 			errorSys: errorSys
 		};
+	}
+
+	pub fn get_tokens(&self) -> &Vec<Token> {
+		return &self.tokens;
 	}
 
 	pub fn get_error(&mut self) -> ErrorInfo {
