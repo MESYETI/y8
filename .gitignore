@@ -3,3 +3,4 @@ printer.txt
 /asm/target
 /asm/test.asm
 /asm/y8asm
+/asm/out.*

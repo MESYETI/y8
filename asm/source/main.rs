@@ -3,6 +3,7 @@
 mod lexer;
 mod error;
 mod parser;
+mod assembler;
 
 use std::env;
 use std::process;
@@ -10,6 +11,7 @@ use std::process;
 use crate::lexer::Lexer;
 use crate::error::ErrorSystem;
 use crate::parser::Parser;
+use crate::assembler::Assembler;
 
 fn main() {
 	let args: Vec<_> = env::args().collect();
@@ -63,43 +65,55 @@ fn main() {
 		eprintln!("Assembler requires input file");
 		process::exit(1);
 	}
+	if outFile.is_none() {
+		outFile = Some(String::from("out.bin"));
+	}
 
 	let mut errorSys = ErrorSystem::new();
 
-	let mut tokens = Vec::new();
+	let binding = inFile.unwrap();
+	let mut lexer = Lexer::new(&binding, &mut errorSys);
 
-	{
-		let binding = inFile.unwrap();
-		let mut lexer = Lexer::new(&binding, &mut errorSys);
+	if !lexer.run(&mut errorSys) {
+		errorSys.crash_if_error();
 
-		if !lexer.run() {
-			errorSys.crash_if_error();
-
-			eprintln!("Lexer failed");
-			process::exit(1);
-		}
-
-		if printTok {
-			lexer.print_result();
-			process::exit(0);
-		}
-
-		tokens = lexer.get_tokens().to_owned();
+		eprintln!("Lexer failed");
+		process::exit(1);
 	}
 
-	{
-		let mut parser = Parser::new(&tokens, &mut errorSys);
-
-		if parser.parse().is_none() {
-			errorSys.crash_if_error();
-
-			eprintln!("Parser failed");
-			process::exit(1);
-		}
-
-		if printAST {
-			parser.print_ast();
-			process::exit(0);
-		}
+	if printTok {
+		lexer.print_result();
+		process::exit(0);
 	}
+
+	let tokens = lexer.get_tokens().to_owned();
+	drop(lexer);
+
+	let mut parser = Parser::new(&tokens, &mut errorSys);
+
+	if parser.parse().is_none() {
+		errorSys.crash_if_error();
+
+		eprintln!("Parser failed");
+		process::exit(1);
+	}
+
+	if printAST {
+		parser.print_ast();
+		process::exit(0);
+	}
+
+	let ast = parser.nodes.to_owned();
+	drop(parser);
+
+	let assemblerRes = Assembler::new(&mut errorSys, &outFile.unwrap());
+
+	if assemblerRes.is_none() {
+		process::exit(1);
+	}
+
+	let mut assembler = assemblerRes.unwrap();
+
+	assembler.assemble(&ast);
+	errorSys.crash_if_error();
 }

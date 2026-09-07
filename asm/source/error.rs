@@ -33,26 +33,35 @@ impl ErrorSystem {
 		return self.fileStack.len() - 1;
 	}
 
-	pub fn get(&mut self, idx: usize) -> Option<&str> {
-		if idx >= self.fileStack.len() {
-			return None
-		}
-		else {
-			return Some(&self.fileStack[idx]);
-		}
-	}
+	// pub fn get(&mut self, idx: usize) -> Option<&str> {
+	// 	if idx >= self.fileStack.len() {
+	// 		return None
+	// 	}
+	// 	else {
+	// 		return Some(&self.fileStack[idx]);
+	// 	}
+	// }
 
 	pub fn add(&mut self, error: ErrorInfo, msg: &str) {
 		self.errors.push(Error {info: error, msg: msg.to_string()});
 	}
 
-	pub fn print_error(&self, error: &Error) {
+	pub fn print_error(&self, error: &Error) -> Option<()> {
 		let fileName = &self.fileStack[error.info.file];
 
 		eprintln!(
-			"\x1b[0;30merror:\x1b[0m {}:{}:{}: {}",
-			fileName, error.info.line, error.info.col, error.msg
+			"\x1b[0;31merror:\x1b[0m {}:{}:{}: {}",
+			fileName, error.info.line + 1, error.info.col + 1, error.msg
 		);
+
+		/*
+		let     file  = fs::read_to_string(fileName).ok()?;
+		let mut lines = file.split("\n");
+
+		let line = lines.nth(error.info.line)?;
+		*/
+
+		return Some(());
 	}
 
 	pub fn print_errors(&self) {

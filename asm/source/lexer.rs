@@ -30,19 +30,18 @@ pub struct Token {
 	pub error:     ErrorInfo
 }
 
-pub struct Lexer<'a> {
-	file:             String,
-	fileIdx:          usize,
-	line:             usize,
-	col:              usize,
-	reading:          String,
-	tokens:           Vec<Token>,
-	mode:             LexerMode,
-	errorSys: &'a mut ErrorSystem
+pub struct Lexer {
+	file:    String,
+	fileIdx: usize,
+	line:    usize,
+	col:     usize,
+	reading: String,
+	tokens:  Vec<Token>,
+	mode:    LexerMode
 }
 
-impl Lexer<'_> {
-	pub fn new<'a>(file: &'a str, errorSys: &'a mut ErrorSystem) -> Lexer<'a> {
+impl Lexer {
+	pub fn new(file: &str, errorSys: &mut ErrorSystem) -> Lexer {
 		return Lexer {
 			file:     file.to_string(),
 			fileIdx:  errorSys.add_file(file),
@@ -50,8 +49,7 @@ impl Lexer<'_> {
 			col:      0,
 			reading:  String::new(),
 			tokens:   Vec::new(),
-			mode:     LexerMode::Token,
-			errorSys: errorSys
+			mode:     LexerMode::Token
 		};
 	}
 
@@ -84,7 +82,7 @@ impl Lexer<'_> {
 		self.reading = String::new();
 	}
 
-	pub fn lex_code(&mut self, code: String) -> bool {
+	pub fn lex_code(&mut self, code: String, errorSys: &mut ErrorSystem) -> bool {
 		let mut i = 0;
 
 		while i < code.len() {
@@ -147,15 +145,25 @@ impl Lexer<'_> {
 				}
 			}
 
+			match ch {
+				'\n' => {
+					self.line += 1;
+					self.col   = 0;
+				},
+				_ => {
+					self.col += 1;
+				}
+			}
+
 			i += 1;
 		}
 
 		return true;
 	}
 
-	pub fn run(&mut self) -> bool {
+	pub fn run(&mut self, errorSys: &mut ErrorSystem) -> bool {
 		return match fs::read_to_string(&self.file) {
-			Ok(code) => self.lex_code(code),
+			Ok(code) => self.lex_code(code, errorSys),
 			Err(_)   => false
 		}
 	}

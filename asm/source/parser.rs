@@ -1,20 +1,62 @@
+use std::fmt;
+use std::fmt::Formatter;
 use crate::lexer::Token;
 use crate::lexer::TokenType;
 use crate::ErrorSystem;
 use crate::error::ErrorInfo;
 
 #[derive(Debug, Clone)]
-pub enum Node {
+pub enum NodeValue {
 	Register(String),
 	Int(u64),
 	String(String),
 	Label(String),
 	Identifier(String),
-	Instruction {name: String, params: Vec<Node>}
+	Instruction {name: String, params: Vec<Node>},
+	Directive {name: String, params: Vec<Node>}
+}
+
+#[derive(Clone)]
+pub struct Node {
+	error: ErrorInfo,
+	value: NodeValue
+}
+
+impl fmt::Debug for Node {
+	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+		return self.value.fmt(f);
+	}
+}
+
+impl Node {
+	pub fn new(error: ErrorInfo, value: NodeValue) -> Node {
+		return Node {error: error, value: value};
+	}
+
+	pub fn value(&self) -> &NodeValue {
+		return &self.value;
+	}
+
+	pub fn error(&self) -> &ErrorInfo {
+		return &self.error;
+	}
+
+	pub fn type_name(&self) -> &'static str {
+		return match self.value {
+			NodeValue::Register(_)      => "register",
+			NodeValue::Int(_)           => "int",
+			NodeValue::String(_)        => "string",
+			NodeValue::Label(_)         => "label",
+			NodeValue::Identifier(_)    => "identifier",
+			NodeValue::Instruction {..} => "instruction",
+			NodeValue::Directive {..}   => "directive"
+		};
+	}
 }
 
 pub struct Parser<'a> {
-	nodes:            Vec<Node>,
+	pub nodes: Vec<Node>,
+
 	i:                usize,
 	tokens:   &'a     Vec<Token>,
 	errorSys: &'a mut ErrorSystem
@@ -34,6 +76,15 @@ impl Parser<'_> {
 		return self.tokens[self.i].error.clone();
 	}
 
+	fn new_node(&self, value: NodeValue, error: Option<ErrorInfo>) -> Node {
+		return if error.is_some() {
+			Node::new(error.unwrap(), value)
+		}
+		else {
+			Node::new(self.get_error(), value)
+		}
+	}
+
 	fn add_error(&mut self, msg: &str) {
 		let error = self.get_error();
 
@@ -44,6 +95,7 @@ impl Parser<'_> {
 		self.i += 1;
 
 		if self.i >= self.tokens.len() {
+			self.i = self.tokens.len() - 1;
 			self.add_error("Unexpected EOF");
 			return None;
 		}
@@ -65,9 +117,11 @@ impl Parser<'_> {
 	fn parse_parameter(&mut self) -> Option<Node> {
 		let tok = &self.tokens[self.i];
 
-		return match tok.tokenType {
+		match tok.tokenType {
 			TokenType::Integer => {
-				return Some(Node::Int(tok.contents.as_ref().unwrap().parse::<u64>().unwrap()));
+				return Some(self.new_node(NodeValue::Int(
+					tok.contents.as_ref().unwrap().parse::<u64>().unwrap()
+				), None));
 			},
 			TokenType::Identifier => {
 				let contents = tok.contents.as_ref().unwrap();
@@ -75,22 +129,29 @@ impl Parser<'_> {
 				return match contents.as_str() {
 					"a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" |
 					"ab" | "cd" | "ef" | "sp" => {
-						return Some(Node::Register(contents.to_string()))
+						return Some(self.new_node(
+							NodeValue::Register(contents.to_string()), None
+						));
 					},
-					_ => Some(Node::Identifier(contents.to_string()))
-				}
+					_ => Some(self.new_node(NodeValue::Identifier(contents.to_string()), None))
+				};
 			},
-			TokenType::String => Some(Node::String(tok.contents.as_ref().unwrap().clone())),
+			TokenType::String => {
+				return Some(self.new_node(NodeValue::String(
+					tok.contents.as_ref().unwrap().clone()
+				), None));
+			},
 			_ => {
 				self.add_error(&format!("Unexpected '{:#?}' token", tok.tokenType));
 				return None;
 			}
-		}
+		};
 	}
 
-	fn parse_instruction(&mut self) -> Option<Node> {
+	fn parse_instruction_directive(&mut self, directive: bool) -> Option<Node> {
 		let     name   = self.tokens[self.i].contents.as_ref().unwrap();
 		let mut params = Vec::new();
+		let     error  = self.get_error();
 
 		self.next()?;
 
@@ -106,13 +167,22 @@ impl Parser<'_> {
 			}
 		}
 
-		return Some(Node::Instruction {name: name.to_string(), params: params.to_owned()});
+		if directive {
+			return Some(self.new_node(NodeValue::Directive {
+				name: name.to_string(), params: params.to_owned()
+			}, Some(error)));
+		}
+		else {
+			return Some(self.new_node(NodeValue::Instruction {
+				name: name.to_string(), params: params.to_owned()
+			}, Some(error)));
+		}
 	}
 
 	fn parse_label(&mut self) -> Option<Node> {
 		let tok = &self.tokens[self.i];
 
-		return Some(Node::Label(tok.contents.as_ref().unwrap().clone()));
+		return Some(self.new_node(NodeValue::Label(tok.contents.as_ref().unwrap().clone()), None));
 	}
 
 	fn parse_node(&mut self) -> Option<Node> {
@@ -120,7 +190,13 @@ impl Parser<'_> {
 
 		return match tok.tokenType {
 			TokenType::Label      => self.parse_label(),
-			TokenType::Identifier => self.parse_instruction(),
+			TokenType::Identifier => self.parse_instruction_directive(false),
+			TokenType::Hashtag => {
+				self.next()?;
+				self.expect(TokenType::Identifier)?;
+
+				return self.parse_instruction_directive(true);
+			}
 			_ => {
 				self.add_error(&format!("Unexpected '{:#?}' token", tok.tokenType));
 				return None;
