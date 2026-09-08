@@ -52,6 +52,41 @@ impl Node {
 			NodeValue::Directive {..}   => "directive"
 		};
 	}
+
+	pub fn unwrap_register(&self) -> &String {
+		match self.value {
+			NodeValue::Register(ref v) => return &v,
+			_                          => panic!()
+		}
+	}
+
+	pub fn unwrap_int(&self) -> u64 {
+		match self.value {
+			NodeValue::Int(v) => return v,
+			_                 => panic!()
+		}
+	}
+
+	pub fn unwrap_string(&self) -> &String {
+		match self.value {
+			NodeValue::String(ref v) => return &v,
+			_                        => panic!()
+		}
+	}
+
+	pub fn unwrap_label(&self) -> &String {
+		match self.value {
+			NodeValue::String(ref v) => return &v,
+			_                        => panic!()
+		}
+	}
+
+	pub fn unwrap_identifier(&self) -> &String {
+		match self.value {
+			NodeValue::String(ref v) => return &v,
+			_                       => panic!()
+		}
+	}
 }
 
 pub struct Parser<'a> {

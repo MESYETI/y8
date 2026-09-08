@@ -1,4 +1,3 @@
-use std::process;
 use std::fs::File;
 use std::io::Write;
 use std::collections::HashMap;
@@ -6,7 +5,7 @@ use crate::parser::Node;
 use crate::parser::NodeValue;
 use crate::error::ErrorSystem;
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone)]
 enum InstParam {
 	N4,
 	N8,
@@ -17,6 +16,7 @@ enum InstParam {
 	DerefN16
 }
 
+#[derive(Clone)]
 struct InstDef {
 	pub name:   String,
 	pub opc:    u8,
@@ -53,7 +53,7 @@ impl InstDef {
 			[InstParam::DerefPair, InstParam::N16] => 3,
 
 			_ => {
-				process::abort();
+				panic!();
 			}
 		};
 	}
@@ -68,7 +68,6 @@ enum AsmBank {
 
 pub struct Assembler<'a> {
 	insts:     Vec<InstDef>,
-	output:    Vec<u8>,
 	bank:      AsmBank,
 	bankAddr:  u16,
 	symbols:   HashMap<String, u16>,
@@ -178,7 +177,6 @@ impl Assembler<'_> {
 
 		return Some(Assembler {
 			insts:     insts,
-			output:    Vec::new(),
 			bank:      AsmBank::None,
 			bankAddr:  0,
 			symbols:   HashMap::new(),
@@ -315,7 +313,7 @@ impl Assembler<'_> {
 			"f" => 5,
 			"g" => 6,
 			"h" => 7,
-			_   => process::abort()
+			_   => panic!()
 		};
 	}
 
@@ -325,8 +323,80 @@ impl Assembler<'_> {
 			"cd" => 1,
 			"ef" => 2,
 			"sp" => 3,
-			_    => process::abort()
+			_    => panic!()
 		};
+	}
+
+	fn assemble_inst(&mut self, name: &str, params: &Vec<Node>) -> Option<()> {
+		let inst = self.match_instruction(name, &params)?.clone();
+
+		assert!(inst.params.len() == params.len());
+
+		self.outFile.write_all(&[inst.opc]).ok()?;
+
+		if inst.params.len() == 0 {
+			return Some(());
+		}
+
+		let mut param: Option<u8> = None;
+
+		match inst.params[0] {
+			InstParam::Reg => {
+				param = Some(Self::assemble_register(params[0].unwrap_register()) << 5);
+			},
+			InstParam::Pair | InstParam::DerefPair => {
+				param = Some(Self::assemble_pair(params[0].unwrap_register()) << 6);
+			},
+			InstParam::N16 | InstParam::DerefN16 => {
+				self.outFile.write_all(&(params[0].unwrap_int() as u16).to_le_bytes()).ok()?;
+
+				assert!(inst.params.len() == 1);
+			},
+			_ => panic!()
+		}
+
+		if inst.params.len() >= 2 {
+			match inst.params[1] {
+				InstParam::Reg => {
+					let shift = match inst.params[0] {
+						InstParam::Reg  => 2,
+						InstParam::Pair => 3,
+						_               => panic!()
+					};
+
+					param = Some(param.unwrap() | (
+						Self::assemble_register(params[1].unwrap_register()) << shift
+					));
+
+					self.outFile.write_all(&[param.unwrap()]).ok()?;
+				},
+				InstParam::Pair | InstParam::DerefPair => {
+					let shift = match inst.params[0] {
+						InstParam::Reg  => 3,
+						InstParam::Pair => 4,
+						_               => panic!()
+					};
+
+					param = Some(param.unwrap() | (Self::assemble_pair(
+						params[1].unwrap_register()) << shift
+					));
+
+					self.outFile.write_all(&[param.unwrap()]).ok()?;
+				},
+				InstParam::N8 => {
+					self.outFile.write_all(&[param.unwrap(), params[1].unwrap_int() as u8]).ok()?;
+				},
+				InstParam::N16 | InstParam::DerefN16 => {
+					self.outFile.write_all(&[param.unwrap()]).ok()?;
+					self.outFile.write_all(&(params[1].unwrap_int() as u16).to_le_bytes()).ok()?;
+				},
+				_ => panic!()
+			}
+		}
+
+		self.outFile.flush().ok()?;
+
+		return Some(());
 	}
 
 	pub fn assemble(&mut self, nodes: &Vec<Node>) -> bool {
@@ -335,7 +405,7 @@ impl Assembler<'_> {
 		// symbol pass
 		for node in nodes.iter() {
 			match node.value() {
-				NodeValue::Instruction {name: name, params: params} => {
+				NodeValue::Instruction {name, params} => {
 					if self.bank != AsmBank::Program {
 						self.add_error(&node, "Instructions must be in program bank");
 						continue;
@@ -356,12 +426,23 @@ impl Assembler<'_> {
 				NodeValue::Label(labelName) => {
 					self.add_symbol(labelName, self.size + self.bankAddr);
 				},
-				NodeValue::Directive {name: name, params: params} => {
+				NodeValue::Directive {name, params} => {
 					self.run_directive(node, &name, &params);
 				},
 				_ => {
 					self.add_error(&node, &format!("Unexpected {}", node.type_name()));
 				}
+			}
+		}
+
+		// assembly pass
+		for node in nodes.iter() {
+			match node.value() {
+				NodeValue::Instruction {name, params} => self.assemble_inst(name, params).unwrap(),
+				NodeValue::Label(_)                   => {},
+				NodeValue::Directive {name, params}   => self.run_directive(node, &name, &params),
+
+				_ => panic!()
 			}
 		}
 
