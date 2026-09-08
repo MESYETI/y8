@@ -415,7 +415,7 @@ impl Assembler<'_> {
 
 					match res {
 						Some(inst) => {
-							self.size += inst.calc_size();
+							self.size += 1 + inst.calc_size();
 						},
 						None => {
 							self.add_error(node, "Invalid instruction");
