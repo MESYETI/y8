@@ -1,5 +1,3 @@
-#addr 0
-
 jmp start
 
 #d 0x00 ; padding
