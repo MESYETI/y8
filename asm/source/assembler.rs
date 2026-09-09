@@ -5,7 +5,7 @@ use crate::parser::Node;
 use crate::parser::NodeValue;
 use crate::error::ErrorSystem;
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 enum InstParam {
 	N4,
 	N8,
@@ -16,7 +16,7 @@ enum InstParam {
 	DerefN16
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct InstDef {
 	pub name:   String,
 	pub opc:    u8,
@@ -71,7 +71,6 @@ pub struct Assembler<'a> {
 	bank:      AsmBank,
 	bankAddr:  u16,
 	symbols:   HashMap<String, u16>,
-	success:   bool,
 	symbolOut: Option<File>,
 	outFile:   File,
 	size:      u16,
@@ -180,7 +179,6 @@ impl Assembler<'_> {
 			bank:      AsmBank::None,
 			bankAddr:  0,
 			symbols:   HashMap::new(),
-			success:   true,
 			symbolOut: symbolOut.ok(),
 			outFile:   file.unwrap(),
 			size:      0,
@@ -204,7 +202,17 @@ impl Assembler<'_> {
 		return Some(());
 	}
 
-	fn match_instruction(&self, name: &str, params: &Vec<Node>) -> Option<&InstDef> {
+	fn node_reg_type(node: &Node) -> InstParam {
+		return match node.unwrap_register().as_str() {
+			"a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" => InstParam::Reg,
+			"ab" | "cd" | "ef" | "sp"                     => InstParam::Pair,
+			_ => panic!()
+		}
+	}
+
+	fn match_instruction(&mut self, name: &str, params: &Vec<Node>) -> Option<&InstDef> {
+		let mut error: Option<String> = None;
+
 		'outer: for def in self.insts.iter() {
 			if (def.name != name) || (def.params.len() != params.len()) {
 				continue;
@@ -213,7 +221,16 @@ impl Assembler<'_> {
 			for (i, param) in params.iter().enumerate() {
 				match param.value() {
 					NodeValue::Register(_) => {
-						if def.params[i] != InstParam::Reg {
+						if (
+							(def.params[i] == InstParam::Reg) &&
+							(Self::node_reg_type(&param) != InstParam::Reg)
+						) {
+							continue 'outer;
+						}
+						if (
+							(def.params[i] == InstParam::Pair) &&
+							(Self::node_reg_type(&param) != InstParam::Pair)
+						) {
 							continue 'outer;
 						}
 					},
@@ -239,6 +256,38 @@ impl Assembler<'_> {
 							}
 						}
 					},
+					NodeValue::Identifier(name) => {
+						let v = match self.symbols.get(name) {
+							Some(value) => value,
+							None => {
+								self.add_error(&params[i], &format!(
+									"Unknown identifier '{}'", name
+								));
+								return None;
+							}
+						};
+
+						match def.params[i] {
+							InstParam::N4 => {
+								if *v > 15 {
+									continue 'outer;
+								}
+							},
+							InstParam::N8 => {
+								if *v > 256 {
+									continue 'outer;
+								}
+							},
+							InstParam::N16 => {
+								if *v > 65535 {
+									continue 'outer;
+								}
+							},
+							_ => {
+								continue 'outer;
+							}
+						}
+					}
 					_ => {
 						continue 'outer;
 					}
@@ -313,7 +362,7 @@ impl Assembler<'_> {
 			"f" => 5,
 			"g" => 6,
 			"h" => 7,
-			_   => panic!()
+			_   => panic!("{}", reg)
 		};
 	}
 
@@ -323,8 +372,16 @@ impl Assembler<'_> {
 			"cd" => 1,
 			"ef" => 2,
 			"sp" => 3,
-			_    => panic!()
+			_    => panic!("{}", reg)
 		};
+	}
+
+	fn assemble_n16(&self, param: &Node) -> Option<u16> {
+		return match param.value() {
+			NodeValue::Int(v)        => Some(*v as u16),
+			NodeValue::Identifier(v) => Some(*(self.symbols.get(v)?)),
+			_ => panic!()
+		}
 	}
 
 	fn assemble_inst(&mut self, name: &str, params: &Vec<Node>) -> Option<()> {
@@ -387,8 +444,16 @@ impl Assembler<'_> {
 					self.outFile.write_all(&[param.unwrap(), params[1].unwrap_int() as u8]).ok()?;
 				},
 				InstParam::N16 | InstParam::DerefN16 => {
+					let n16 = self.assemble_n16(&params[1]);
+
+					if n16.is_none() {
+						self.add_error(&params[1], &format!(
+							"Unknown identifier '{}'", params[1].unwrap_identifier()
+						));
+					}
+
 					self.outFile.write_all(&[param.unwrap()]).ok()?;
-					self.outFile.write_all(&(params[1].unwrap_int() as u16).to_le_bytes()).ok()?;
+					self.outFile.write_all(&n16.unwrap().to_le_bytes()).ok()?;
 				},
 				_ => panic!()
 			}
@@ -400,7 +465,7 @@ impl Assembler<'_> {
 	}
 
 	pub fn assemble(&mut self, nodes: &Vec<Node>) -> bool {
-		self.success = true;
+		let mut success = true;
 
 		// symbol pass
 		for node in nodes.iter() {
@@ -438,7 +503,11 @@ impl Assembler<'_> {
 		// assembly pass
 		for node in nodes.iter() {
 			match node.value() {
-				NodeValue::Instruction {name, params} => self.assemble_inst(name, params).unwrap(),
+				NodeValue::Instruction {name, params} => {
+					if self.assemble_inst(name, params).is_none() {
+						success = false;
+					}
+				},
 				NodeValue::Label(_)                   => {},
 				NodeValue::Directive {name, params}   => self.run_directive(node, &name, &params),
 
@@ -446,6 +515,6 @@ impl Assembler<'_> {
 			}
 		}
 
-		return self.success;
+		return success;
 	}
 }
