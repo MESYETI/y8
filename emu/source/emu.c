@@ -281,14 +281,14 @@ static void FinishTestMode(void) {
 #define DEC_PD(B) \
 	uint8_t pd = (B & 0xC0) >> 6
 
-#define FLAGS_8(V) do { \
-	emu.zero = v == 0; \
-	emu.sign = v & 0x80; \
+#define FLAGS_8(v) do { \
+	emu.zero = (v) == 0; \
+	emu.sign = (v) & 0x80; \
 } while (0)
 
-#define FLAGS_16(V) do { \
-	emu.zero = v == 0; \
-	emu.sign = v & 0x8000; \
+#define FLAGS_16(v) do { \
+	emu.zero = (v) == 0; \
+	emu.sign = (v) & 0x8000; \
 } while (0)
 
 void Emu_RunInsts(int times) {
@@ -423,7 +423,7 @@ void Emu_RunInsts(int times) {
 				Emu_Write16(Emu_ReadReg16(pd), v);
 				break;
 			}
-			case 0x20: { // JMP N16	
+			case 0x20: { // JMP N16
 				emu.pc = NextWord();
 				break;
 			}
@@ -553,6 +553,7 @@ void Emu_RunInsts(int times) {
 					case 0x4A: a |= b; break;
 					case 0x4B: a ^= b; break;
 				}
+				FLAGS_8(a);
 
 				Emu_WriteReg8(rd, a);
 				break;
@@ -563,7 +564,7 @@ void Emu_RunInsts(int times) {
 				DEC_PD_RS(param);
 
 				uint16_t a = Emu_ReadReg16(pd);
-				uint8_t  b = Emu_ReadReg8(rs);
+				uint8_t	 b = Emu_ReadReg8(rs);
 
 				if (opc == 0x47) {
 					a += b;
@@ -573,6 +574,15 @@ void Emu_RunInsts(int times) {
 				}
 
 				Emu_WriteReg16(pd, a);
+				break;
+			}
+			case 0x4C: { // NOT Rd
+				uint8_t param = NextByte();
+				DEC_RD(param);
+
+				uint8_t a = Emu_ReadReg8(rd);
+
+				Emu_WriteReg8(rd, a ^ 0xFF);
 				break;
 			}
 			case 0x4D:   // ICMP Rd, Rs
@@ -667,7 +677,10 @@ void Emu_RunInsts(int times) {
 				DEC_RD(param);
 				param &= 0xF;
 
-				Emu_WriteReg8(rd, Emu_ReadReg8(rd) << param);
+				uint8_t v = Emu_ReadReg8(rd) << param;
+				emu.zero = v == 0;
+
+				Emu_WriteReg8(rd, v);
 				break;
 			}
 			case 0x65: { // SHL Pd, N4
@@ -675,7 +688,10 @@ void Emu_RunInsts(int times) {
 				DEC_PD(param);
 				param &= 0xF;
 
-				Emu_WriteReg16(pd, Emu_ReadReg16(pd) << param);
+				uint16_t v = Emu_ReadReg16(pd) << param;
+				emu.zero = v == 0;
+
+				Emu_WriteReg16(pd, v);
 				break;
 			}
 			case 0x66: { // SHL Rd, N4
@@ -683,7 +699,10 @@ void Emu_RunInsts(int times) {
 				DEC_RD(param);
 				param &= 0xF;
 
-				Emu_WriteReg8(rd, Emu_ReadReg8(rd) >> param);
+				uint8_t v = Emu_ReadReg8(rd) >> param;
+				emu.zero = v == 0;
+
+				Emu_WriteReg8(rd, v);
 				break;
 			}
 			case 0x67: { // SHL Pd, N4
@@ -691,37 +710,58 @@ void Emu_RunInsts(int times) {
 				DEC_PD(param);
 				param &= 0xF;
 
-				Emu_WriteReg16(pd, Emu_ReadReg16(pd) >> param);
+				uint16_t v = Emu_ReadReg16(pd) >> param;
+				emu.zero = v == 0;
+
+				Emu_WriteReg16(pd, v);
 				break;
 			}
 			case 0x68: { // SHL Rd, Rs
 				uint8_t param = NextByte();
 				DEC_RD_RS(param);
 
-				Emu_WriteReg8(rd, Emu_ReadReg8(rd) << Emu_ReadReg8(rs));
+				uint8_t v = Emu_ReadReg8(rd) << Emu_ReadReg8(rs);
+				emu.zero = v == 0;
+
+				Emu_WriteReg8(rd, v);
 				break;
 			}
 			case 0x69: { // SHL Pd, Ps
 				uint8_t param = NextByte();
 				DEC_PD_PS(param);
 
-				Emu_WriteReg8(pd, Emu_ReadReg8(pd) << Emu_ReadReg8(ps));
+				uint8_t v = Emu_ReadReg8(pd) << Emu_ReadReg8(ps);
+				emu.zero = v == 0;
+
+				Emu_WriteReg8(pd, v);
 				break;
 			}
 			case 0x6A: { // SHR Rd, Rs
 				uint8_t param = NextByte();
 				DEC_RD_RS(param);
 
-				Emu_WriteReg8(rd, Emu_ReadReg8(rd) >> Emu_ReadReg8(rs));
+				uint8_t v = Emu_ReadReg8(rd) >> Emu_ReadReg8(rs);
+				emu.zero = v == 0;
+
+				Emu_WriteReg8(rd, v);
 				break;
 			}
 			case 0x6B: { // SHR Pd, Ps
 				uint8_t param = NextByte();
 				DEC_PD_PS(param);
 
-				Emu_WriteReg8(pd, Emu_ReadReg8(pd) >> Emu_ReadReg8(ps));
+				uint8_t v = Emu_ReadReg8(pd) >> Emu_ReadReg8(ps);
+				emu.zero = v == 0;
+
+				Emu_WriteReg8(pd, v);
 				break;
 			}
+#if 0
+			case 0xFF: { // hue: DBG
+				Emu_Dump();
+				break;
+			}
+#endif
 			default: {
 				fprintf(stderr, "error: Invalid opcode %.2X at %.4X\n", opc, (int) opcAddr);
 				emu.halted = true;
@@ -729,3 +769,17 @@ void Emu_RunInsts(int times) {
 		}
 	}
 }
+
+void Emu_Dump(void) {
+	printf("---------------------------\n");
+	printf("AB=%04X CD=%04X EF=%04X %c%c%c\n",
+		emu.a*256 + emu.b,
+		emu.c*256 + emu.d,
+		emu.e*256 + emu.f,
+		emu.zero  ? 'Z' : ' ',
+		emu.sign  ? 'S' : ' ',
+		emu.carry ? 'C' : ' ');
+	printf("G=%02X H=%02X	SP=%04X PC=%04X\n",
+		emu.g, emu.h, emu.sp, emu.pc);
+}
+
